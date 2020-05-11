@@ -2,6 +2,9 @@
 #include <vector>
 #include <algorithm>
 #include <gtest/gtest.h>
+#include <unordered_map>
+#include <map>
+#include <string>
 
 using namespace std;
 
@@ -215,6 +218,369 @@ TEST(MID,T221_DYNAMIC_PROGRAM){
                                   {'1','0','0','1','0','0','0','0'}};
     area = slo.maximalSquare(matrix7);
     EXPECT_EQ(area,1);
+}
+
+TEST(EASY,T69){
+    class Solution {
+    public:
+        int mySqrt(int x) {
+//            for(size_t i=1;i<=x; i++){
+//                if(i*i<=x && (i+1)*(i+1) > x)
+//                    return i;
+//            }
+            // 二分法
+            if(x==1)
+                return 1;
+            unsigned long long mid=1;
+            unsigned long long up = x,low=0;
+            unsigned long long ans_1; // store (mid+1)*(mid+1)
+            while(mid!=0){
+                mid = (up+low)/2;
+                ans_1 = (mid+1)*(mid+1);
+                if(ans_1 <= x){
+                    low = mid;
+                }else if((mid)*(mid) > x){
+                    up = mid;
+                }else{
+                    return mid;
+                }
+            }
+            return 0;
+        }
+    };
+    Solution slo;
+    EXPECT_EQ(slo.mySqrt(0),0);
+    EXPECT_EQ(slo.mySqrt(1),1);
+    EXPECT_EQ(slo.mySqrt(4),2);
+    EXPECT_EQ(slo.mySqrt(8),2);
+    EXPECT_EQ(slo.mySqrt(9),3);
+    EXPECT_EQ(slo.mySqrt(2147395599),46339);
+}
+
+TEST(MID, T1105){
+    class Solution {
+    public:
+        int minHeightShelves(vector<vector<int>>& books, int shelf_width) {
+            size_t num_book = books.size();
+            std::vector<int> dp(num_book, 0xfffffff);
+            dp[0]=0;
+            for(const auto &book:books){
+
+            }
+            return 1;
+        }
+    };
+    std::cerr<<"Cant Understand This Question\n";
+    EXPECT_TRUE(false);
+}
+
+TEST(EASY,T704){
+    class Solution {
+    public:
+        int search(vector<int>& nums, int target) {
+            int left,right,mid;
+            left = 0;
+            right = nums.size() -1;
+            while(left <= right){
+                mid = (left +right)/2;
+                if(nums[mid] == target)
+                    return mid;
+                else if(nums[mid] > target)
+                    right = mid - 1;
+                else
+                    left = mid + 1;
+            }
+            return -1;
+        }
+    };
+    Solution slo;
+    std::vector<int> a;
+    EXPECT_EQ(slo.search(a ,1),-1);
+
+    a={1};
+    EXPECT_EQ(slo.search(a,1),0);
+
+    a={-1,0,3,5,9,12};
+    EXPECT_EQ(slo.search(a ,9),4);
+
+    a={-1,0,3,5,9,12};
+    EXPECT_EQ(slo.search(a ,2),-1);
+}
+
+TEST(MID, T236){
+    struct TreeNode {
+        int val;
+        TreeNode *left;
+        TreeNode *right;
+        TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+    };
+
+    class Solution {
+    public:
+        TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+            p_ = p;
+            q_ = q;
+            path.clear();
+            path_q.clear();
+            path_p.clear();
+            Dfs(root);
+            size_t id=0, max_sz = min(path_p.size(),path_q.size());
+            while(id < max_sz - 1){
+                if( path_q[id]->val == path_p[id]->val && path_q[id + 1]->val != path_p[id + 1]->val)
+                    return path_p[id];
+                id++;
+            }
+            return path_p[max_sz-1];
+        }
+
+        void Dfs(TreeNode* cur_node){
+            path.push_back(cur_node);
+            if(cur_node->val == p_->val){
+                path_p = path;
+            }else if(cur_node->val == q_->val)
+                path_q = path;
+
+            if(!path_p.empty() && !path_q.empty())
+                return;
+
+            if(cur_node->left != nullptr){
+                Dfs(cur_node->left);
+            }
+            if(cur_node->right != nullptr){
+                Dfs(cur_node->right);
+            }
+            path.pop_back();
+        }
+
+    private:
+        TreeNode *p_, *q_;
+        std::vector<TreeNode*> path,path_p,path_q;
+    };
+    EXPECT_TRUE(true);
+}
+
+
+TEST(HARD, T84){
+    class Solution {
+    public:
+        struct Area{
+            Area():val(0),is_continue(false),temp_val(0){}
+            unsigned int val;
+            bool is_continue;
+            unsigned int temp_val;
+            explicit operator bool() const {
+                return is_continue;
+            }
+            void operator += (unsigned int _val){
+                val+=_val;
+            }
+        };
+
+        int largestRectangleArea(vector<int>& heights) {
+            if(heights.empty())
+                return 0;
+            std::map<int,Area> dp;
+
+            for(auto h:heights){
+                // emplace insert
+                dp.emplace(std::piecewise_construct,
+                           std::forward_as_tuple(h),
+                           std::forward_as_tuple());
+            }
+
+            for(unsigned int h : heights){
+                // emplace insert
+                auto it = dp.find(h);
+                // set all height bigger than h as false;
+                for(auto temp_it = it; temp_it != dp.end(); temp_it++){
+                    if(temp_it == it)
+                        continue;
+                    temp_it->second.is_continue = false;
+                }
+                // set all height lower than h
+                auto temp_it = dp.begin();
+                while(true){
+                    if(temp_it == it){
+                        SetIt(temp_it);
+                        break;
+                    }
+                    SetIt(temp_it);
+                    temp_it++;
+                }
+            }
+
+            int max_area = 0;
+            for(const auto& p : dp){
+                int area = max(p.second.val,p.second.temp_val);
+                if(area>max_area)
+                    max_area = area;
+            }
+            return max_area;
+        }
+
+        static void SetIt(std::map<int,Area>::iterator &it){
+            if(it->first == 0)
+                return;
+            if(!(it->second)){
+                if(it->second.val > it->second.temp_val)
+                    it->second.temp_val = it->second.val;
+                it->second.val = it->first;
+                it->second.is_continue = true;
+            }else{
+                (it->second)+=(it->first);
+            }
+        }
+    };
+    Solution slo;
+    vector<int> h;
+
+    h={2,1,5,6,2,3};
+    EXPECT_EQ(slo.largestRectangleArea(h),10);
+
+    h={3,5,5,2,5,5,6,6,4,4,1,1,2,5,5,6,6,4,1,3};
+    EXPECT_EQ(slo.largestRectangleArea(h),24);
+
+    h={0,0,0,0,0,0,0,0,2147483647};
+    EXPECT_EQ(slo.largestRectangleArea(h),2147483647);
+
+    h.clear();
+    for(int i=0;i<=5; i++){
+        h.push_back(i);
+    }
+    EXPECT_EQ(slo.largestRectangleArea(h),9);
+
+    h.clear();
+    h.reserve(19999+1);
+    for(int i=0;i<=19999; i++){
+        h.push_back(i);
+    }
+    EXPECT_EQ(slo.largestRectangleArea(h),100000000);
+}
+
+TEST(HARD, T84_Stack){
+    class Solution {
+    public:
+        int largestRectangleArea(vector<int>& heights) {
+            return 0;
+        }
+    };
+    Solution slo;
+    vector<int> h;
+
+    h={2,1,5,6,2,3};
+    EXPECT_EQ(slo.largestRectangleArea(h),10);
+
+    h={3,5,5,2,5,5,6,6,4,4,1,1,2,5,5,6,6,4,1,3};
+    EXPECT_EQ(slo.largestRectangleArea(h),24);
+
+    h={0,0,0,0,0,0,0,0,2147483647};
+    EXPECT_EQ(slo.largestRectangleArea(h),2147483647);
+
+    h.clear();
+    for(int i=0;i<=5; i++){
+        h.push_back(i);
+    }
+    EXPECT_EQ(slo.largestRectangleArea(h),9);
+
+    h.clear();
+    h.reserve(19999+1);
+    for(int i=0;i<=19999; i++){
+        h.push_back(i);
+    }
+    EXPECT_EQ(slo.largestRectangleArea(h),100000000);
+}
+
+TEST(EASY,T942){
+    class Solution {
+    public:
+        vector<int> diStringMatch(string S) {
+            size_t n = S.size();
+            if(n==0)
+                return vector<int>();
+            vector<int> ans(n+1);
+            size_t low = 0,up=n;
+
+            for(size_t i=0; i< n; i++){
+                if(S[i]=='I')
+                    ans[i] = low++;
+                else
+                    ans[i] = up--;
+            }
+            ans[n] = low;
+            return ans;
+        }
+    };
+
+    Solution slo;
+    std::vector<int> r;
+    r = {0,4,1,3,2};
+    EXPECT_EQ(slo.diStringMatch("IDID"),r);
+    r = {0,1,2,3};
+    EXPECT_EQ(slo.diStringMatch("III"),r);
+}
+
+
+TEST(MID, T46){
+    class Solution {
+    public:
+        vector<vector<int>> permute(vector<int>& nums) {
+            std::vector<std::vector<int>> ans;
+            if(nums.empty())
+                return ans;
+            if(nums.size()==1){
+                ans.push_back(nums);
+                return ans;
+            }
+            std::vector<bool> block(nums.size());
+            path.reserve(nums.size());
+            std::sort(nums.begin(),nums.end());
+            for(size_t i=0; i< nums.size() ; i++){
+                dfs(i,ans,block,nums);
+            }
+            return ans;
+        }
+
+        void dfs(size_t cur_id,std::vector<std::vector<int>> &ans,std::vector<bool> &block, vector<int>& nums){
+            path.push_back(nums[cur_id]);
+            block[cur_id] = true;
+            for(size_t i=0; i< nums.size(); i++){
+                if(!block[i]){
+                    if(path.size() == nums.size() - 1){
+                        path.push_back(nums[i]);
+                        ans.push_back(path);
+                        path.pop_back();
+                    }else{
+                        dfs(i,ans,block,nums);
+                    }
+                }
+            }
+            path.pop_back();
+            block[cur_id] = false;
+        }
+
+    private:
+        std::vector<int> path;
+    };
+
+    Solution slo;
+    vector<int> nums;
+    vector<vector<int>> res;
+
+    nums = {1};
+    res={{1}};
+    EXPECT_EQ(slo.permute(nums),res);
+
+    nums = {1,2,3};
+    res = {
+            {1,2,3},
+            {1,3,2},
+            {2,1,3},
+            {2,3,1},
+            {3,1,2},
+            {3,2,1}
+    };
+    EXPECT_EQ(slo.permute(nums),res);
+
 }
 
 int main(int argc, char** argv) {
