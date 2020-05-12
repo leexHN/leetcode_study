@@ -583,6 +583,30 @@ TEST(MID, T46){
 
 }
 
+TEST(MID, T991){
+    class Solution {
+    public:
+        int brokenCalc(int X, int Y) {
+            int count=0;
+            while (Y>X){
+                if(Y%2){
+                    Y = (Y+1)/2;
+                    count+=2;
+                }else{
+                    Y = Y /2;
+                    count++;
+                }
+            }
+            return X - Y + count;
+        }
+    };
+    Solution slo;
+
+    EXPECT_EQ(slo.brokenCalc(2,3),2);
+    EXPECT_EQ(slo.brokenCalc(5,8),2);
+    EXPECT_EQ(slo.brokenCalc(3,10),3);
+}
+
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
