@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <map>
 #include <string>
+#include <climits>
 
 using namespace std;
 
@@ -605,6 +606,51 @@ TEST(MID, T991){
     EXPECT_EQ(slo.brokenCalc(2,3),2);
     EXPECT_EQ(slo.brokenCalc(5,8),2);
     EXPECT_EQ(slo.brokenCalc(3,10),3);
+}
+
+
+TEST(EASY, T155){
+    class MinStack {
+    public:
+        /** initialize your data structure here. */
+        MinStack(){
+        }
+
+        void push(int x) {
+            List* pre = data_;
+            data_ = new List(x,pre);
+        }
+
+        void pop() {
+            List *cur = data_;
+            data_ = data_->pre_list;
+//            delete cur;
+        }
+
+        int top() {
+            return data_->val;
+        }
+
+        int getMin() {
+            return data_->min_val;
+        }
+
+    private:
+        struct List{
+            explicit List(int _val, List *_pre_list):val(_val),pre_list(_pre_list){
+                if(pre_list){
+                    min_val = min(pre_list->min_val,val);
+                }else{
+                    min_val = val;
+                }
+            }
+            int min_val;
+            int val;
+            List *pre_list;
+        };
+        List *data_ = nullptr;
+    };
+    EXPECT_TRUE(true);
 }
 
 int main(int argc, char** argv) {
