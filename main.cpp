@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 #include <climits>
+#include <queue>
 
 using namespace std;
 
@@ -651,6 +652,64 @@ TEST(EASY, T155){
         List *data_ = nullptr;
     };
     EXPECT_TRUE(true);
+}
+
+TEST(MID, T102){
+    struct TreeNode {
+        int val;
+        TreeNode *left;
+        TreeNode *right;
+        TreeNode(int x, TreeNode *_left = nullptr, TreeNode *_right = nullptr) : val(x), left(_left), right(_right) {}
+    };
+
+    class Solution {
+    public:
+        vector<vector<int>> levelOrder(TreeNode* root) {
+            struct TreeWithLayer{
+                explicit TreeWithLayer(TreeNode* _tr, int _layer):treeNode(_tr),layer(_layer){}
+                int NumLayer(){ return layer;}
+                TreeNode * treeNode;
+            private:
+                int layer = 0;
+            };
+            vector<vector<int>> ans;
+            if(!root){
+                return ans;
+            }
+            std::queue<TreeWithLayer> qu;
+            qu.emplace(root,0);
+            std::vector<int> one_layer;
+            int layer_count = 0;
+
+            while(!qu.empty()){
+                int cur_layer = qu.front().NumLayer();
+                if(qu.front().treeNode->left){
+                    qu.emplace(qu.front().treeNode->left, cur_layer+1);
+                }
+                if(qu.front().treeNode->right){
+                    qu.emplace(qu.front().treeNode->right, cur_layer+1);
+                }
+                if(layer_count != cur_layer){
+                    layer_count++;
+                    ans.emplace_back(one_layer);
+                    one_layer.clear();
+                }
+                one_layer.push_back(qu.front().treeNode->val);
+                qu.pop();
+            }
+            ans.emplace_back(one_layer);
+            return ans;
+        }
+    };
+
+    TreeNode root(3, new TreeNode(9), new TreeNode(20, new TreeNode(15), new TreeNode(17)));
+    Solution slo;
+    vector<vector<int>> ans{{3},{9,20},{15,17}};
+    EXPECT_EQ(slo.levelOrder(&root),ans);
+
+    TreeNode root2(3);
+    ans={{3}};
+    EXPECT_EQ(slo.levelOrder(&root2),ans);
 }
 
 int main(int argc, char** argv) {
