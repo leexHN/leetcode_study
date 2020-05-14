@@ -712,6 +712,61 @@ TEST(MID, T102){
     EXPECT_EQ(slo.levelOrder(&root2),ans);
 }
 
+TEST(MID, T1218){
+    class Solution {
+    public:
+        int longestSubsequence(vector<int>& arr, int difference) {
+            if(difference == 0)
+                return arr.size();
+            if(difference < 0)
+                sort(arr.begin(),arr.end(), std::greater<int>());
+            else
+                sort(arr.begin(),arr.end());
+
+            int count = 0;
+
+
+        }
+    };
+    EXPECT_TRUE(false);
+}
+
+TEST(EASY, T136){
+    class Solution {
+    public:
+        int singleNumber(vector<int>& nums) {
+            int ans = 0;
+            for(auto n: nums){
+                ans ^= n;
+            }
+            return ans;
+        }
+    };
+    vector<int> nums;
+    Solution slo;
+    nums = {2,3,3,2,4,1,4};
+    EXPECT_EQ(slo.singleNumber(nums),1);
+}
+
+TEST(MID, T137){
+    class Solution {
+    public:
+        int singleNumber(vector<int>& nums) {
+            int seen_once =0, seen_twice = 0;
+
+            for(auto n: nums){
+                seen_once = (~seen_twice) & (seen_once ^ n);
+                seen_twice = (~seen_once) & (seen_twice ^ n);
+            }
+            return seen_once;
+        }
+    };
+    vector<int> nums;
+    Solution slo;
+    nums = {2,2,3,2};
+    EXPECT_EQ(slo.singleNumber(nums),3);
+}
+
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
