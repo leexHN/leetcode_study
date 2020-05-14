@@ -767,6 +767,59 @@ TEST(MID, T137){
     EXPECT_EQ(slo.singleNumber(nums),3);
 }
 
+TEST(MID, T318){
+    class Solution {
+    public:
+        int maxProduct(vector<string>& words) {
+            int max = 0;
+            // pre cal mask before compare
+            vector<int> mask_array(words.size());
+
+            for(size_t i=0;i<words.size();i++){
+                mask_array[i] = CalStringMask(words[i]);
+            }
+
+            for(size_t i=0;i<words.size();i++){
+                for (size_t j = 0; j < words.size(); ++j) {
+                    if(i!=j&&!bool(mask_array[i]&mask_array[j])){
+                        int temp_max = words[i].size() * words[j].size();
+                        if( temp_max>max)
+                            max = temp_max;
+                    }
+                }
+            }
+            return max;
+        }
+
+    private:
+        inline int CalStringMask(const string &s1){
+            int int1 = 0;
+            for(const auto ch: s1)
+                int1 |= 1<<(ch - 'a');
+            return int1;
+        }
+        inline bool IsHasComm(const string& s1,const string& s2){
+            int int1 = 0,int2 = 0;
+            for(const auto ch: s1)
+                int1 |= 1<<(ch - 'a');
+            for(const auto ch : s2)
+                int2 |= 1<<(ch - 'a');
+            return bool(int1&int2);
+        }
+    };
+
+    vector<string> words;
+    Solution slo;
+
+    words = {"abcw","baz","foo","bar","xtfn","abcdef"};
+    EXPECT_EQ(slo.maxProduct(words),16);
+
+    words = {"a","aa","aaa","aaaa"};
+    EXPECT_EQ(slo.maxProduct(words),0);
+}
+
+
+
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
