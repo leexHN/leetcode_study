@@ -818,7 +818,32 @@ TEST(MID, T318){
     EXPECT_EQ(slo.maxProduct(words),0);
 }
 
+TEST(MID, T718){
+    class Solution {
+    public:
+        int findLength(vector<int>& A, vector<int>& B) {
+            vector<vector<int>> dp(A.size() + 1, vector<int>(B.size()+1,0));
+            int ans = 0;
+            for(size_t a =1; a<= A.size(); a++){
+                for(size_t b=1; b<= B.size(); b++){
+                    if(A[a-1] == B[b - 1]){
+                        dp[a][b] = dp[a-1][b-1] + 1;
+                        ans = max(ans, dp[a][b]);
+                    }
+                }
+            }
+            return ans;
+        }
+    };
 
+    vector<int> A,B;
+    Solution slo;
+
+    A={1,2,3,2,1};
+    B= {3,2,1,4,7};
+    EXPECT_EQ(slo.findLength(A,B),3);
+
+}
 
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
