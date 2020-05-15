@@ -845,6 +845,36 @@ TEST(MID, T718){
 
 }
 
+TEST(MID, T718_1D){
+    class Solution {
+    public:
+        int findLength(vector<int>& A, vector<int>& B) {
+            vector<int> dp(A.size() + 1, 0);
+            int ans = 0;
+            for(size_t a = 1; a<= A.size(); a++){
+                for(size_t b= B.size(); b>= 1; b--){
+                    if(A[a-1] == B[b - 1]){
+                        dp[b] = dp[b-1] + 1;
+                        ans = max(ans, dp[b]);
+                    } else
+                        dp[b] = 0;
+                }
+            }
+            return ans;
+        }
+    };
+
+    vector<int> A,B;
+    Solution slo;
+
+    A={1,2,3,2,1};
+    B= {3,2,1,4,7};
+    EXPECT_EQ(slo.findLength(A,B),3);
+    A={2,7,1,5,4};
+    B= {4,3,2,7,1};
+    EXPECT_EQ(slo.findLength(A,B),3);
+}
+
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
