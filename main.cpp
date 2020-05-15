@@ -7,6 +7,7 @@
 #include <string>
 #include <climits>
 #include <queue>
+#include <list>
 
 using namespace std;
 
@@ -873,6 +874,35 @@ TEST(MID, T718_1D){
     A={2,7,1,5,4};
     B= {4,3,2,7,1};
     EXPECT_EQ(slo.findLength(A,B),3);
+}
+
+TEST(MID, T560){
+    class Solution {
+    public:
+        int subarraySum(vector<int>& nums, int k) {
+            unordered_map<int, int> k_map;
+            int ans = 0;
+            int cum_sum = 0;
+            for(auto n : nums){
+                cum_sum+=n;
+                int delta = cum_sum - k;
+                auto it = k_map.find(delta);
+                if(it != k_map.end())
+                    ans += it->second;
+                k_map[cum_sum]++;
+            }
+            ans += k_map[k];
+            return ans;
+        }
+    };
+
+    vector<int> nums;
+    Solution slo;
+
+    nums = {1,1,1};
+    EXPECT_EQ(slo.subarraySum(nums,2),2);
+    nums = {1,-1,1,-1};
+    EXPECT_EQ(slo.subarraySum(nums,0),4);
 }
 
 int main(int argc, char** argv) {
