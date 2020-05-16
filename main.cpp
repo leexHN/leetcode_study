@@ -905,6 +905,81 @@ TEST(MID, T560){
     EXPECT_EQ(slo.subarraySum(nums,0),4);
 }
 
+TEST(HARD, T25){
+    struct ListNode {
+        int val;
+        ListNode *next;
+
+        ListNode(int x, ListNode* _next = nullptr) : val(x), next(_next) {}
+    };
+
+    class Solution {
+    public:
+        ListNode* reverseKGroup(ListNode* head, int k) {
+            if(k == 1)
+                return head;
+            std::vector<ListNode*> st;
+            st.reserve(k+1);
+            st.push_back(nullptr);
+            ListNode* cur_node = head;
+            ListNode* ans = nullptr;
+            while (cur_node != nullptr){
+                st.push_back(cur_node);
+                cur_node = cur_node->next;
+                if(st.size() == k+1){
+                    auto top = st.back();
+                    while(st.size() != 2){
+                        auto temp = st.back();
+                        st.pop_back();
+                        temp->next = st.back();
+                    }
+                    auto cur_block_end = st.back();
+                    st.pop_back();
+                    auto pre_block_end = st.back();
+                    st.pop_back();
+                    if(pre_block_end!= nullptr)
+                        pre_block_end->next = top;
+                    else
+                        ans = top;
+                    st.push_back(cur_block_end);
+                }
+            }
+            if(st.size()>1){
+                auto pre_block_end = st[0];
+                auto top = st[1];
+                pre_block_end ->next = top;
+            }else{
+                st.back()->next = nullptr;
+            }
+            return ans;
+        }
+    };
+
+    auto CheckAns = [](ListNode* root, std::vector<int> data){
+        ListNode* cur_node = root;
+        size_t idx = 0;
+        while(cur_node->next!= nullptr){
+            if(data[idx] != cur_node->val)
+                return false;
+            idx++;
+            cur_node = cur_node->next;
+        }
+        return true;
+    };
+
+    Solution slo;
+    ListNode root(1,new ListNode(2,new ListNode(3,new ListNode(4,new ListNode(5)))));
+    std::vector<int> ans;
+    ans = {2,1,4,3,5};
+    ASSERT_TRUE(CheckAns(slo.reverseKGroup(&root,2),ans));
+    ListNode root1(1,new ListNode(2,new ListNode(3,new ListNode(4,new ListNode(5, new ListNode(6))))));
+    ans = {2,1,4,3,6,5};
+    ASSERT_TRUE(CheckAns(slo.reverseKGroup(&root1,2),ans));
+    ListNode root2(1,new ListNode(2,new ListNode(3,new ListNode(4,new ListNode(5, new ListNode(6))))));
+    ans ={6,5,4,3,2,1};
+    ASSERT_TRUE(CheckAns(slo.reverseKGroup(&root2,6),ans));
+}
+
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
