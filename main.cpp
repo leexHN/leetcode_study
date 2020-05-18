@@ -1015,6 +1015,55 @@ TEST(MID, T957){
     EXPECT_EQ(slo.prisonAfterNDays(cells,8),ans);
 }
 
+TEST(MID, T152){
+    class Solution {
+    public:
+        int maxProduct(vector<int>& nums) {
+            int pre_max = 1,pre_min = 1;
+            int ans = nums[0];
+            for(auto n:nums){
+                auto temp = pre_max;
+                pre_max = max(pre_max*n, max(pre_min*n,n));
+                pre_min = min(pre_min*n, min(n, temp*n));
+                ans = max(ans,pre_max);
+            }
+            return ans;
+        }
+    };
+
+    Solution slo;
+    vector<int> nums = {2,3,-2,4};
+
+    EXPECT_EQ(slo.maxProduct(nums),6);
+
+    nums = {-2,0,-1};
+    EXPECT_EQ(slo.maxProduct(nums),0);
+
+    nums = {0,2,0,5,7};
+    EXPECT_EQ(slo.maxProduct(nums),35);
+
+    nums = {-4,-3,-2};
+    EXPECT_EQ(slo.maxProduct(nums),12);
+}
+
+TEST(EASY,T53){
+    class Solution {
+    public:
+        int maxSubArray(vector<int>& nums) {
+            int pre = 0, maxAns = nums[0];
+            for (const auto &x: nums) {
+                pre = max(pre + x, x);
+                maxAns = max(maxAns, pre);
+            }
+            return maxAns;
+        }
+    };
+
+    Solution slo;
+    vector<int> nums = {1,100,-100,100};
+    EXPECT_EQ(slo.maxSubArray(nums),101);
+}
+
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
