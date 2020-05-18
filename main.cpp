@@ -980,6 +980,41 @@ TEST(HARD, T25){
     ASSERT_TRUE(CheckAns(slo.reverseKGroup(&root2,6),ans));
 }
 
+TEST(MID, T957){
+    class Solution {
+    public:
+        vector<int> prisonAfterNDays(vector<int>& cells, int N) {
+            if (!N)
+                return cells;
+            int n = N % 14;
+            if (!n)
+                n = 14;
+            while (n--) {
+                vector<int> tmp = vector<int>(cells);
+                for (int i = 1; i < 7; ++i)
+                    cells[i] = (tmp[i - 1] ^ !tmp[i + 1]);
+                cells[0] = cells[7] = 0;
+            }
+            return cells;
+        }
+    };
+
+    Solution slo;
+    vector<int> cells(8,1);
+    vector<int> ans;
+    cells = {0,1,0,1,1,0,0,1};
+    ans = {0,0,1,1,0,0,0,0};
+    EXPECT_EQ(slo.prisonAfterNDays(cells,7),ans);
+
+    cells = {1,0,0,1,0,0,1,0};
+    ans = {0,0,1,1,1,1,1,0};
+    EXPECT_EQ(slo.prisonAfterNDays(cells,1000000000),ans);
+
+    cells = {0,0,1,1,1,1,0,0};
+    ans = {0,0,0,1,1,0,0,0};
+    EXPECT_EQ(slo.prisonAfterNDays(cells,8),ans);
+}
+
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
