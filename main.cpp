@@ -1064,6 +1064,30 @@ TEST(EASY,T53){
     EXPECT_EQ(slo.maxSubArray(nums),101);
 }
 
+TEST(MID, T646){
+    class Solution {
+    public:
+        int findLongestChain(vector<vector<int>>& pairs) {
+            struct {
+                bool operator () (const vector<int>&a, const vector<int>&b) const{
+                    return a[1]<b[1];
+                }
+            }Comp;
+            sort(pairs.begin(), pairs.end(), Comp);
+
+            int cur = INT32_MIN, step = 0;
+            for(const auto &p: pairs){
+                if(p[1] < cur){
+                    cur = p[0];
+                    step++;
+                }
+            }
+            return step;
+        }
+    };
+    EXPECT_TRUE(true);
+}
+
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
