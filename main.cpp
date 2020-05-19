@@ -1112,6 +1112,25 @@ TEST(EASY, T680){
     EXPECT_EQ(slo.validPalindrome("aebcbca"),false);
 }
 
+TEST(EASY, T771){
+    class Solution {
+    public:
+        int numJewelsInStones(string J, string S) {
+            set<char> idmal;
+            for(auto c:J)
+                idmal.insert(c);
+            int start = 0;
+            for(auto c:S){
+                if(idmal.count(c) == 1)
+                    start++;
+            }
+            return start;
+        }
+    };
+    Solution slo;
+    EXPECT_EQ(slo.numJewelsInStones("aA","aAAbbbb"),3);
+}
+
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
