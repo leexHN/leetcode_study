@@ -1088,6 +1088,30 @@ TEST(MID, T646){
     EXPECT_TRUE(true);
 }
 
+TEST(EASY, T680){
+    class Solution {
+    public:
+        bool palindrome(const std::string& s, int i, int j)
+        {
+            for ( ; i < j && s[i] == s[j]; ++i, --j);
+            return i >= j;
+        }
+
+        bool validPalindrome(string s) {
+            int i = 0, j = s.size() - 1;
+            for ( ; i < j && s[i] == s[j]; ++i, --j);
+            return palindrome(s, i, j - 1) || palindrome(s, i + 1, j);
+        }
+    };
+
+    Solution slo;
+    EXPECT_EQ(slo.validPalindrome("a"),true);
+    EXPECT_EQ(slo.validPalindrome("aba"),true);
+    EXPECT_EQ(slo.validPalindrome("abca"),true);
+    EXPECT_EQ(slo.validPalindrome("abcca"),true);
+    EXPECT_EQ(slo.validPalindrome("aebcbca"),false);
+}
+
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
