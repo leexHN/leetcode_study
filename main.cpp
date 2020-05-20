@@ -1131,6 +1131,51 @@ TEST(EASY, T771){
     EXPECT_EQ(slo.numJewelsInStones("aA","aAAbbbb"),3);
 }
 
+TEST(MID, T894){
+    struct TreeNode {
+        int val;
+        TreeNode *left;
+        TreeNode *right;
+        TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+    };
+
+    class Solution {
+        unordered_map<int, vector<TreeNode*>> memo;
+    public:
+        vector<TreeNode*> allPossibleFBT(int N) {
+            if(N%2==0)
+                return vector<TreeNode*>();
+
+            if(memo.count(N))
+                return memo[N];
+
+            if(N==1){
+                TreeNode* root = new TreeNode(0);
+                memo[N].push_back(root);
+                return memo[N];
+            }
+
+            for(int left=1; left < N; left+=2){
+                int right = N-left-1;
+                for(auto& left_node : allPossibleFBT(left)){
+                    for(auto&  right_node: allPossibleFBT(right)){
+                        TreeNode* root = new TreeNode(0);
+                        root->left = left_node;
+                        root->right = right_node;
+                        memo[N].push_back(root);
+                    }
+                }
+
+            }
+
+            return memo[N];
+        }
+    };
+
+    EXPECT_TRUE(true);
+}
+
+
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
