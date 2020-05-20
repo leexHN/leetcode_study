@@ -1219,6 +1219,30 @@ TEST(MID, T1371){
     EXPECT_TRUE(false);
 }
 
+TEST(EASY, T205){
+    class Solution {
+    public:
+        bool isIsomorphic(string s, string t) {
+            unordered_map<char,char> mm;
+            for(size_t i=0; i<s.length();i++){
+                if(mm.count(s[i]) == 0 && mm.count(t[i])==0){
+                    mm[s[i]] = t[i];
+                    mm[t[i]] = s[i];
+                }else if(mm.count(s[i]) == 1 && mm.count(t[i])==1){
+                    if(!(mm[s[i]] == t[i]&&mm[t[i]] == s[i]))
+                        return false;
+                } else
+                    return false;
+            }
+            return true;
+        }
+    };
+    Solution slo;
+    EXPECT_EQ(slo.isIsomorphic("egg","add"), true);
+}
+
+
+
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
