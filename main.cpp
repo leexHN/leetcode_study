@@ -8,6 +8,7 @@
 #include <climits>
 #include <queue>
 #include <list>
+#include <unordered_set>
 
 using namespace std;
 
@@ -1175,6 +1176,48 @@ TEST(MID, T894){
     EXPECT_TRUE(true);
 }
 
+TEST(MID, T1371){
+    class Solution {
+    public:
+        int findTheLongestSubstring(string s) {
+            vector<int> pos(1u<<5u,-1); //a e i o u
+            int ans = 0;
+            unsigned char status = 0; //0 ~ even 1~odd
+            pos[0] = 0; //all element is even minimum id is start
+            for(int i=0;i<s.length();i++){
+                switch (s[i]){
+                    case 'a':
+                        status ^= 0b1u<<4u;
+                        break;
+                    case 'e':
+                        status ^= 0b1u<<3u;
+                        break;
+                    case 'i':
+                        status ^= 0b1u<<2u;
+                        break;
+                    case 'o':
+                        status ^= 0b1u<<1u;
+                        break;
+                    case 'u':
+                        status ^= 0b1u;
+                        break;
+                }
+                if(pos[status] == -1){ //current status have not pos id
+                    pos[status] = i+1;//only store the minimum id
+                }else{ // current status have a identical previous state. odd-odd = even enven-even = even
+                    ans = std::max(ans, i+1 - pos[status]);
+                }
+
+            }
+            return ans;
+        }
+    };
+
+    Solution slo;
+
+    EXPECT_EQ(slo.findTheLongestSubstring("leetcodeisgreat"),5);
+    EXPECT_TRUE(false);
+}
 
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
