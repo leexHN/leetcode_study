@@ -1241,7 +1241,59 @@ TEST(EASY, T205){
     EXPECT_EQ(slo.isIsomorphic("egg","add"), true);
 }
 
+TEST(MID, T54){
+    class Solution {
+        vector<int> ans;
+        int SZ1,SZ2;
+    public:
+        vector<int> spiralOrder(vector<vector<int>> &matrix) {
+            ans.clear();
+            if(matrix.empty())
+                return ans;
+            SZ1 = matrix.size();
+            SZ2 = matrix[0].size();
+            Recursion(matrix,SZ1,SZ2);
+            return ans;
+        }
 
+        void Recursion(vector<vector<int>>& matrix, int sz1, int sz2){
+            int start_id1 = (SZ1 - sz1)/2;
+            int start_id2 = (SZ2 - sz2)/2;
+            if(sz1==1){
+                for(int i=start_id2;i<start_id2 + sz2;i++)
+                    ans.push_back(matrix[start_id1][i]);
+                return;
+            } else if(sz2==1){
+                for(int i=start_id1;i<start_id1 + sz1;i++)
+                    ans.push_back(matrix[i][start_id2]);
+                return;
+            } else if(sz1==0 || sz2 ==0)
+                return;
+
+            for(int i=start_id2; i< start_id2+sz2; i++){
+                ans.push_back(matrix[start_id1][i]);
+            }
+            for(int i=start_id1+1; i< start_id1+sz1; i++){
+                ans.push_back(matrix[i][start_id2+sz2-1]);
+            }
+            for(int i=start_id2 + sz2 -2; i>=start_id2; i--){
+                ans.push_back(matrix[start_id1+sz1-1][i]);
+            }
+            for(int i=start_id1+sz1-2;i>start_id1; i--){
+                ans.push_back(matrix[i][start_id2]);
+            }
+            Recursion(matrix,sz1-2,sz2-2);
+        }
+    };
+    Solution slo;
+    vector<vector<int>> m {{1,2,3},{4,5,6},{7,8,9}};
+    vector<int> a = {1,2,3,6,9,8,7,4,5};
+    EXPECT_EQ(slo.spiralOrder(m),a);
+
+    m = {{1,2,3,4},{5,6,7,8},{9,10,11,12}};
+    a = {1,2,3,4,8,12,11,10,9,5,6,7};
+    EXPECT_EQ(slo.spiralOrder(m),a);
+}
 
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
