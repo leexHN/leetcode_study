@@ -1386,6 +1386,48 @@ TEST(MID, T1372){
     EXPECT_TRUE(true);
 }
 
+TEST(EASY, T463){
+    class Solution {
+        int perimeter;
+        int i_max,j_max;
+        void dfs(vector<vector<int>>& grid, int i, int j){
+            if(i<0 || j<0 || i>= i_max || j>=j_max){
+                perimeter++;
+                return;
+            }
+            if(grid[i][j]==0){
+                perimeter++;
+                return;
+            }else if(grid[i][j] == 2)
+                return;
+            grid[i][j] = 2;
+            dfs(grid,i-1,j);
+            dfs(grid,i+1,j);
+            dfs(grid,i,j+1);
+            dfs(grid,i,j-1);
+        }
+    public:
+        int islandPerimeter(vector<vector<int>>& grid) {
+            perimeter = 0;
+            i_max = grid.size();
+            j_max = grid[0].size();
+            for(size_t i=0; i< grid.size(); i++){
+                for (size_t j = 0; j < grid[i].size(); ++j) {
+                    if(grid[i][j] == 1){
+                        dfs(grid,i,j);
+                        return perimeter;
+                    }
+                }
+            }
+            return perimeter;
+        }
+    };
+
+    Solution slo;
+    vector<vector<int>> grid={{0,1,0,0},{1,1,1,0},{0,1,0,0},{1,1,0,0}};
+    EXPECT_EQ(slo.islandPerimeter(grid),16);
+}
+
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
