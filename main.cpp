@@ -1295,6 +1295,37 @@ TEST(MID, T54){
     EXPECT_EQ(slo.spiralOrder(m),a);
 }
 
+TEST(MID, T5){
+    class Solution {
+    public:
+        string longestPalindrome(string s) {
+            vector<vector<bool>> dp(s.length(), vector<bool>(s.length()));
+            string ans;
+
+            for(size_t j=0; j< s.length();j++){
+                for (int i = j; i>=0; i--) {
+                    if(i==j)
+                        dp[i][j] = true;
+                    else if(j-i==1 && s[i]==s[j]){
+                        dp[i][j] = true;
+                        if(ans.length()<2)
+                            ans = string(s.begin()+i, s.begin()+j+1);
+                    } else if(j-i>1 && dp[i+1][j-1] && s[i]==s[j]){
+                        dp[i][j]=true;
+                        if(ans.length() < j-i+1)
+                            ans = string(s.begin()+i, s.begin()+j+1);
+                    }
+                }
+            }
+            if(ans.empty() && !s.empty())
+                ans = s.front();
+            return ans;
+        }
+    };
+    Solution slo;
+    EXPECT_EQ(slo.longestPalindrome("babad"),"bab");
+}
+
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
