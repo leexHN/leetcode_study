@@ -1326,6 +1326,66 @@ TEST(MID, T5){
     EXPECT_EQ(slo.longestPalindrome("babad"),"bab");
 }
 
+TEST(EASY, T35){
+    class Solution {
+    public:
+        int searchInsert(vector<int> nums, int target) {
+            int left =0, right = nums.size()-1;
+            while (left <= right){
+                int mid = (left+right)/2;
+                if(nums[mid]==target)
+                    return mid;
+                else if(nums[mid] > target)
+                    right = mid-1;
+                else if(nums[mid] < target)
+                    left = mid + 1;
+            }
+            return left;
+        }
+    };
+    Solution slo;
+    EXPECT_EQ(slo.searchInsert({1,3,5,6},5),2);
+    EXPECT_EQ(slo.searchInsert({1,3,5,6},2),1);
+}
+
+TEST(MID, T1372){
+    struct TreeNode {
+        int val;
+        TreeNode *left;
+        TreeNode *right;
+        TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+    };
+    class Solution {
+        int path_len_max;
+        void dfs(TreeNode* root,int path_len, bool pre_is_left){
+            if(pre_is_left){
+                if(root->right!= nullptr)
+                    dfs(root->right,path_len+1,false);
+                else if(path_len_max< path_len)
+                    path_len_max = path_len;
+                if(root->left != nullptr)
+                    dfs(root->left,1,true);
+            }else{
+                if(root->left!=nullptr)
+                    dfs(root->left, path_len+1, true);
+                else if(path_len_max< path_len)
+                    path_len_max = path_len;
+                if(root->right != nullptr)
+                    dfs(root->right,1, false);
+            }
+        }
+    public:
+        int longestZigZag(TreeNode* root) {
+            path_len_max = 0;
+            dfs(root, 0, false);
+            dfs(root,0, true);
+            return path_len_max;
+        }
+
+    };
+    EXPECT_TRUE(true);
+}
+
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
