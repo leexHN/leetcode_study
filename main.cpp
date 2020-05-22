@@ -1428,6 +1428,125 @@ TEST(EASY, T463){
     EXPECT_EQ(slo.islandPerimeter(grid),16);
 }
 
+TEST(MID, T988){
+    struct TreeNode {
+        int val;
+        TreeNode *left;
+        TreeNode *right;
+        TreeNode(int x, TreeNode *_left = nullptr,TreeNode *_right=nullptr) : val(x), left(_left), right(_right) {}
+    };
+    class Solution {
+    public:
+        string smallestFromLeaf(TreeNode* root) {
+            struct Path{
+                Path(const Path &other,TreeNode* _node):node(_node){
+                    path = other.path;
+                    path.push_front(node->val + 'a');
+                }
+                Path() = default;
+                bool operator < (const Path &rhs)const {
+                    return this->path < rhs.path;
+                }
+                TreeNode* node;
+                list<char> path;
+            };
+            queue<Path> path_node;
+            vector<Path> valid_node;
+            int path_min = INT32_MAX;
+            Path root_p;
+            root_p.node = root;
+            root_p.path.push_back(root->val+'a');
+            path_node.emplace(root_p);
+            while(!path_node.empty()){
+                auto temp = path_node.front();
+                path_node.pop();
+                if(temp.path.size() > path_min)
+                    break;
+                if(temp.node->left == nullptr && temp.node->right== nullptr){
+                    path_min = temp.path.size();
+                    valid_node.push_back(temp);
+                }
+                if(temp.node -> left!= nullptr)
+                    path_node.emplace(temp,temp.node->left);
+                if(temp.node-> right!= nullptr)
+                    path_node.emplace(temp,temp.node->right);
+            }
+
+            sort(valid_node.begin(), valid_node.end());
+            return string(valid_node.front().path.begin(), valid_node.front().path.end());
+        }
+    };
+
+    Solution slo;
+    auto*  root = new TreeNode(0,
+            new TreeNode(1,new TreeNode(3), new TreeNode(4)),
+            new TreeNode(2,new TreeNode(3),new TreeNode(4)));
+    EXPECT_EQ(slo.smallestFromLeaf(root),"dba");
+}
+
+TEST(MID, T105){
+    EXPECT_TRUE(false);
+}
+
+TEST(MID, T93){
+    class Solution {
+        std::vector<string> ans;
+        void dfs(const string &s, string::iterator it, string &buffer, int sz){
+            if(sz>4)
+                return;
+            if(sz == 4){
+                if(it == s.end())
+                    ans.emplace_back(buffer.begin(), buffer.end()-1);
+                return;
+            }
+
+            if( (it+1) <= s.end()){
+                auto buffer_end = buffer.end();
+                string temp(it,it+1);
+                temp +='.';
+                buffer += temp;
+                dfs(s,it+1,buffer,sz+1);
+                buffer.erase(buffer_end, buffer.end());
+            }
+
+            if( (it+2) <= s.end()){
+                auto buffer_end = buffer.end();
+                string temp(it,it+2);
+                if(stoi(temp) < 10)
+                    return;
+                temp +='.';
+                buffer += temp;
+                dfs(s,it+2,buffer,sz+1);
+                buffer.erase(buffer_end, buffer.end());
+            }
+
+            if( (it+3) <= s.end() ){
+                auto buffer_end = buffer.end();
+                string temp(it,it+3);
+                if(stoi(temp) > 255 || stoi(temp) < 100)
+                    return;
+                temp +='.';
+                buffer += temp;
+                dfs(s,it+3,buffer,sz+1);
+                buffer.erase(buffer_end, buffer.end());
+            }
+
+        }
+    public:
+        vector<string> restoreIpAddresses(string s) {
+            ans.clear();
+            string buffer;
+            dfs(s, s.begin(),buffer,0);
+            return ans;
+        }
+    };
+
+    Solution slo;
+
+    vector<string> ans = {"255.255.11.135", "255.255.111.35"};
+    EXPECT_EQ(slo.restoreIpAddresses("25525511135"), ans);
+}
+
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
