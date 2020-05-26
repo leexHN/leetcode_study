@@ -1547,6 +1547,103 @@ TEST(MID, T93){
     EXPECT_EQ(slo.restoreIpAddresses("25525511135"), ans);
 }
 
+TEST(MID, T2){
+    struct ListNode {
+        int val;
+        ListNode *next;
+
+        ListNode(int x, ListNode* _next = nullptr) : val(x), next(_next) {}
+    };
+    class Solution {
+        void Copy(ListNode* l1, ListNode* cur,bool is_add){
+            while(l1!= nullptr){
+                cur->next = new ListNode(l1->val);
+                cur = cur->next;
+                l1 = l1->next;
+                if(is_add){
+                    cur->val++;
+                    if(cur->val == 10){
+                        cur->val = 0;
+                        is_add = true;
+                    }else
+                        is_add = false;
+                }
+            }
+            if(is_add)
+                cur->next = new ListNode(1);
+        }
+    public:
+        ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
+            bool is_add = false;
+            ListNode* ans = nullptr;
+            ListNode* cur = nullptr;
+            while(l1 != nullptr && l2 != nullptr){
+                auto v1 = l1->val, v2 = l2->val;
+                auto sum = v1+v2;
+                if(is_add)
+                    sum++;
+                if(sum>= 10){
+                    is_add = true;
+                    sum-=10;
+                } else
+                    is_add = false;
+                l1 = l1->next;
+                l2 = l2->next;
+                if(ans == nullptr){
+                    ans = new ListNode(sum);
+                    cur = ans;
+                    continue;
+                }
+                cur->next = new ListNode(sum);
+                cur = cur->next;
+            }
+            if(l1 == nullptr && l2 == nullptr && is_add)
+                cur->next = new ListNode(1);
+            else if(l1 != nullptr){
+                Copy(l1,cur,is_add);
+            } else if(l2 != nullptr){
+                Copy(l2, cur,is_add);
+            }
+            return ans;
+        }
+    };
+
+    ListNode *pr1 = new ListNode(0), *pr2 = new ListNode(1);
+    Solution slo;
+    EXPECT_EQ(slo.addTwoNumbers(pr1,pr2)->val,1);
+    pr1 = new ListNode(1);
+    pr2 = new ListNode(9, new ListNode(9));
+    auto ans = slo.addTwoNumbers(pr1,pr2);
+}
+
+TEST(MID, T287){
+    class Solution {
+    public:
+        int findDuplicate(vector<int> nums) {
+            int l=1, r = nums.size()-1;
+            int ans = -1;
+            while(l<=r){
+                int cnt = 0;
+                int mid = (r-l)/2+l;
+                for(auto n:nums){
+                    cnt += (n<=mid);
+                }
+                if(cnt <= mid){
+                    l = mid + 1;
+                }else{
+                    ans = mid;
+                    r = mid - 1;
+                }
+            }
+            return ans;
+        }
+    };
+
+    Solution slo;
+    EXPECT_EQ(slo.findDuplicate({1,2,3,4,4,5,6,7}),4);
+    EXPECT_EQ(slo.findDuplicate({2,3,4,4,4,5,6,7,8}),4);
+}
+
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
