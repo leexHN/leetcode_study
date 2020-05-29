@@ -1644,6 +1644,56 @@ TEST(MID, T287){
     EXPECT_EQ(slo.findDuplicate({2,3,4,4,4,5,6,7,8}),4);
 }
 
+TEST(MID, T974){
+    class Solution {
+    public:
+        int subarraysDivByK(vector<int> A, int K) {
+            std::vector<int> dp;
+            dp.reserve(A.size());
+            int sum=0;
+            int ans = 0;
+            for(auto a: A){
+                sum+=a;
+                ans += (sum%K==0);
+                dp.push_back(sum);
+            }
+            for(size_t i=0; i< A.size(); i++){
+                for (size_t j = 0; j < i; j++) {
+                    ans+= ((dp[i]-dp[j])%K == 0);
+                }
+            }
+            return ans;
+        }
+    };
+
+    Solution slo;
+    EXPECT_EQ(slo.subarraysDivByK({4,5,0,-2,-3,1},5),7);
+}
+
+TEST(EASY, T198){
+    class Solution {
+    public:
+        int rob(vector<int> nums) {
+            if (nums.empty()) {
+                return 0;
+            }
+            int size = nums.size();
+            if (size == 1) {
+                return nums[0];
+            }
+            vector<int> dp = vector<int>(size, 0);
+            dp[0] = nums[0];
+            dp[1] = max(nums[0], nums[1]);
+            for (int i = 2; i < size; i++) {
+                dp[i] = max(dp[i - 2] + nums[i], dp[i - 1]);
+            }
+            return dp[size - 1];
+        }
+    };
+
+    Solution slo;
+    EXPECT_EQ(slo.rob({1,2,3,1}),4);
+}
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
