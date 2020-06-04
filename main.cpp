@@ -1694,6 +1694,27 @@ TEST(EASY, T198){
     Solution slo;
     EXPECT_EQ(slo.rob({1,2,3,1}),4);
 }
+
+TEST(MID,T238){
+    class Solution {
+    public:
+        vector<int> productExceptSelf(vector<int>& nums) {
+            vector<int> ans(nums.size());
+            ans[0] = 1;
+            for (int i = 1; i < nums.size(); ++i) {
+                ans[i] = nums[i - 1] * ans[i - 1];
+            }
+            int right = 1;
+            for(int i= nums.size()-2; i>=0; i--){
+                right = nums[i+1] * right;
+                ans[i] *= right;
+            }
+            return ans;
+        }
+    };
+    EXPECT_TRUE(true);
+}
+
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
