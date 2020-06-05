@@ -1715,6 +1715,171 @@ TEST(MID,T238){
     EXPECT_TRUE(true);
 }
 
+TEST(MID,T707){
+    class MyLinkedList {
+    private:
+        struct Node{
+            Node *pre,*next;
+            int val;
+            Node(int _val, Node* _pre= nullptr, Node* _next= nullptr):val(_val),pre(_pre),next(_next){};
+        }*head_ = nullptr,*tail_ = nullptr;
+        size_t sz_;
+
+        Node* GetNode(int index){
+            if(index<0 || index > sz_ -1)
+                return nullptr;
+            Node* cur_node = head_;
+            for(int i=0;i<index;i++)
+                cur_node = cur_node->next;
+            return cur_node;
+        }
+
+        void DeleteHead(){
+            if(sz_ == 0){
+                head_ = nullptr;
+                tail_ = nullptr;
+                return;
+            }
+            auto temp = head_->next;
+            head_ = temp;
+            if(head_ != nullptr)
+                head_->pre = nullptr;
+            sz_--;
+        }
+
+        void DeleteTail(){
+            if(sz_ == 0){
+                head_ = nullptr;
+                tail_ = nullptr;
+                return;
+            }
+            auto temp = tail_->pre;
+            tail_ = temp;
+            if(tail_!= nullptr)
+                tail_ -> next = nullptr;
+            sz_--;
+        }
+    public:
+        /** Initialize your data structure here. */
+        MyLinkedList():sz_(0) {
+
+        }
+
+        /** Get the value of the index-th node in the linked list. If the index is invalid, return -1. */
+        int get(int index) {
+            auto cur_node = GetNode(index);
+            if(cur_node == nullptr)
+                return -1;
+            else
+                return cur_node->val;
+        }
+
+        /** Add a node of value val before the first element of the linked list. After the insertion, the new node will be the first node of the linked list. */
+        void addAtHead(int val) {
+            if(head_ == nullptr){
+                head_ = new Node(val);
+                tail_ = head_;
+            }else{
+                auto temp = new Node(val, nullptr,head_);
+                head_->pre = temp;
+                head_ = temp;
+            }
+            sz_++;
+        }
+
+        /** Append a node of value val to the last element of the linked list. */
+        void addAtTail(int val) {
+            if(head_ == nullptr){
+                head_ = new Node(val);
+                tail_ = head_;
+            }else{
+                auto temp = new Node(val, tail_, nullptr);
+                tail_->next = temp;
+                tail_ = temp;
+            }
+            sz_++;
+        }
+
+        /** Add a node of value val before the index-th node in the linked list. If index equals to the length of linked list, the node will be appended to the end of linked list. If index is greater than the length, the node will not be inserted. */
+        void addAtIndex(int index, int val) {
+            if(index > sz_)
+                return;
+            if(index == sz_){
+                addAtTail(val);
+                return;
+            }
+            if(index == 0){
+                addAtHead(val);
+                return;
+            }
+            auto cur_node = GetNode(index);
+            auto new_node = new Node(val,cur_node->pre,cur_node);
+            cur_node->pre->next = new_node;
+            cur_node->pre = new_node;
+            sz_++;
+        }
+
+        /** Delete the index-th node in the linked list, if the index is valid. */
+        void deleteAtIndex(int index) {
+            auto cur_node = GetNode(index);
+            if(cur_node == nullptr)
+                return;
+            if(cur_node->pre == nullptr||cur_node->next == nullptr){
+                if(cur_node->pre == nullptr)
+                    DeleteHead();
+                if(cur_node->next == nullptr)
+                    DeleteTail();
+            }else{
+                cur_node->pre->next = cur_node-> next;
+                cur_node->next->pre = cur_node ->pre;
+                sz_--;
+            }
+            delete cur_node;
+        }
+    };
+
+/**
+ * Your MyLinkedList object will be instantiated and called as such:
+ * MyLinkedList* obj = new MyLinkedList();
+ * int param_1 = obj->get(index);
+ * obj->addAtHead(val);
+ * obj->addAtTail(val);
+ * obj->addAtIndex(index,val);
+ * obj->deleteAtIndex(index);
+ */
+    MyLinkedList linkedList = *new MyLinkedList();
+    linkedList.addAtHead(1);
+    linkedList.addAtTail(3);
+    linkedList.addAtIndex(1,2);   //链表变为1-> 2-> 3
+    int val = linkedList.get(1);            //返回2
+    linkedList.deleteAtIndex(1);  //现在链表是1-> 3
+    val = linkedList.get(1);            //返回3
+
+    auto l2 = new MyLinkedList();
+    l2->addAtHead(1);
+    l2->deleteAtIndex(0);
+
+    auto l3 = new MyLinkedList();
+    l3->addAtIndex(0,10);
+    l3->addAtIndex(0,20);
+    l3->addAtIndex(0,30);
+    val  = l3->get(0);
+
+    auto l4 = new MyLinkedList();
+    l4->addAtHead(5);
+    l4->addAtHead(7);
+    l4->addAtHead(0);
+    l4->get(2);
+    l4->get(3);
+    l4->addAtIndex(1,3);
+    l4->deleteAtIndex(2);
+    l4->addAtHead(9);
+    l4->addAtIndex(3,9);
+    l4->addAtHead(4);
+
+    EXPECT_TRUE(true);
+}
+
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
