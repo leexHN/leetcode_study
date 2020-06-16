@@ -1984,6 +1984,87 @@ TEST(HARD,T126){
 
 }
 
+TEST(HRAD, T297){
+
+    struct TreeNode {
+        int val;
+        TreeNode *left;
+        TreeNode *right;
+        TreeNode(int x, TreeNode *_left = nullptr,TreeNode *_right=nullptr) : val(x), left(_left), right(_right) {}
+    };
+    /// code function : 1 \t 2 \t 3 \t x \t x \t 4 \t 5
+    class Codec {
+    public:
+
+        // Encodes a tree to a single string.
+        string serialize(TreeNode* root) {
+            if(root == nullptr)
+                return string();
+            queue<TreeNode*> qu;
+            string ans;
+            ans+= to_string(root->val);
+            qu.push(root);
+            while(!qu.empty()){
+                auto cur_node = qu.front();
+                qu.pop();
+
+                if(cur_node->left == nullptr)
+                    ans += "\tx";
+                else{
+                    ans += ('\t' + to_string(cur_node->left->val));
+                    qu.push(cur_node->left);
+                }
+
+                if(cur_node->right == nullptr)
+                    ans += "\tx";
+                else{
+                    ans += ('\t' + to_string(cur_node->right->val));
+                    qu.push(cur_node->right);
+                }
+            }
+            while(ans.back() == '\t' || ans.back() == 'x')
+                ans.pop_back();
+            return ans;
+        }
+
+        // Decodes your encoded data to tree.
+        TreeNode* deserialize(string data) {
+            if(data.empty())
+                return nullptr;
+            stringstream ss(data);
+            string temp;
+            ss >> temp;
+            auto *root = new TreeNode(stoi(temp));
+            queue<TreeNode*> qu;
+            qu.push(root);
+            int count = 0; // if count == 2 means that the node has been visited;
+            while (ss >> temp){
+                auto cur_node = qu.front();
+                count++;
+                if(count == 1){// left
+                    if(temp != "x"){
+                        cur_node->left = new TreeNode(stoi(temp));
+                        qu.push(cur_node->left);
+                    }
+                } else {
+                    count = 0;
+                    qu.pop();
+                    if(temp != "x"){
+                        cur_node->right = new TreeNode(stoi(temp));
+                        qu.push(cur_node->right);
+                    }
+                }
+            }
+            return root;
+        }
+    };
+
+    auto root = new TreeNode(1,new TreeNode(2), new TreeNode(3, new TreeNode(4), new TreeNode(5)));
+    Codec code;
+    EXPECT_EQ(code.serialize(root), string("1\t2\t3\tx\tx\t4\t5"));
+    auto new_root = code.deserialize(code.serialize(root));
+}
+
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
