@@ -1880,6 +1880,110 @@ TEST(MID,T707){
     EXPECT_TRUE(true);
 }
 
+TEST(HARD,T126){
+    class Solution {
+        std::unordered_map<string, int> id_hash_;
+        std::vector<std::vector<int>> edge_;
+        std::vector<string> id_word_;
+
+        void GenEdge(const string & beginWord,const vector<string>& wordList){
+            id_hash_.clear();
+            edge_.clear();
+            id_word_.clear();
+            id_word_.reserve(wordList.size()+1);
+
+            int id = 0;
+            id_hash_[beginWord] = id++;
+            id_word_.push_back(beginWord);
+
+            for(const auto& w: wordList){
+                if(id_hash_.count(w)==0){
+                    id_hash_[w] = id++;
+                    id_word_.push_back(w);
+                }
+            }
+
+
+            edge_ = std::vector<std::vector<int>>(id_word_.size());
+
+            for(int i=0; i<id_word_.size(); i++){
+                for(int j=i+1; j<id_word_.size(); j++){
+                    if(CheckOneDiff(id_word_[i], id_word_[j])){
+                        edge_[i].push_back(j);
+                        edge_[j].push_back(i);
+                    }
+                }
+            }
+
+        }
+
+        bool CheckOneDiff(const string &s1,const string &s2){
+            int diff_count = 0;
+            for(size_t i=0; i<s1.size();i++){
+                if(s1[i] != s2[i])
+                    diff_count++;
+                if(diff_count>1)
+                    return false;
+            }
+            return diff_count==1;
+        }
+
+        void GenAns(vector<vector<string>> &ans,const std::vector<int>& path){
+            ans.emplace_back();
+            for(auto id: path){
+                ans.back().push_back(id_word_[id]);
+            }
+        }
+    public:
+        vector<vector<string>> findLadders(string beginWord, string endWord, vector<string>& wordList) {
+            GenEdge(beginWord,wordList);
+
+            std::queue<std::vector<int>> qu;
+            std::vector<int> cost(id_hash_.size(), INT32_MAX);
+            vector<vector<string>> ans;
+
+            if(id_hash_.count(beginWord)==0 || id_hash_.count(endWord)==0){
+                return ans;
+            }
+
+            qu.push({id_hash_[beginWord]});
+            int end_id = id_hash_[endWord];
+            cost[id_hash_[beginWord]] = 1;
+
+            while(!qu.empty()){
+                auto path = qu.front();
+                auto cur_end_id = path.back();
+                if(cur_end_id == end_id){
+                    GenAns(ans, path);
+                }
+                for(auto next_id: edge_[cur_end_id]){
+                    if(cost[cur_end_id] + 1 <= cost[next_id]){
+                        qu.push(path);
+                        qu.back().push_back(next_id);
+                        cost[next_id] = cost[cur_end_id] + 1;
+                    }
+                }
+
+                qu.pop();
+            }
+
+            return ans;
+        }
+    };
+
+    Solution slo;
+    vector<string> wordList;
+    vector<vector<string>> res;
+
+    wordList = {"hot","dot","dog","lot","log","cog"};
+    res = {{"hit","hot","dot","dog","cog"},
+           {"hit","hot","lot","log","cog"}};
+
+
+    EXPECT_EQ(slo.findLadders("hit", "cog",wordList),res);
+
+}
+
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
