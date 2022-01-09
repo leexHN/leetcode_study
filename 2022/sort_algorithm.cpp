@@ -135,7 +135,7 @@ void MergeSortUtility(std::vector<T> &vec, std::vector<T> &buffer, size_t l, siz
     }
   }
   // move buffer value to vec
-  for (size_t i=l; i<r;i++){
+  for (size_t i = l; i < r; i++) {
     vec[i] = buffer[i];
   }
 
@@ -149,15 +149,84 @@ void MergeSort(std::vector<T> &vec) {
   MergeSortUtility(vec, buffer_vec, 0, vec.size());
 }
 
+}// namespace mergesort
+
+namespace insert_sort {
+
+/**
+ *  @brief: 将第一待排序序列第一个元素看做一个有序序列，把第二个元素到最后一个元素当成是未排序序列。
+从头到尾依次扫描未排序序列，将扫描到的每个元素插入有序序列的适当位置。（如果待插入的元素与有序序列中的某个元素相等，则将待插入元素插入到相等元素的后面。）
+ 类似打扑克理牌的过程
+ */
+template<typename T>
+void InsertSort(std::vector<T> &vec) {
+  // index<=i表示已经排序好的数列
+  for (size_t i = 0; i < vec.size(); i++) {
+    // 从右向左检测是否插入 j ready to insert index
+    for (size_t j = i; j > 0 && vec[j - 1] > vec[j]; j--) {
+      std::swap(vec[j - 1], vec[j]);
+    }
+  }
 }
+
+} // namespace insert_sort
+
+namespace bubble_sort {
+/**
+ * @brief  从左向右变量发现 左边比右边大的就进行交换，一次循环后最后一个元素肯定是最大，
+ * 下次循环就可以从左到右以同种方式循环到倒数第二个，即倒数第一和第二都是排好序的了，以此类推
+ */
+template<typename T>
+void BubbleSort(std::vector<T> &vec) {
+  if (vec.empty()) {
+    return;
+  }
+
+  size_t sorted_idx = vec.size(); // 这idx(含)右边，都是排好序的index，初始时index是无效的
+  while (sorted_idx > 0) {
+    for (size_t i = 1; i < sorted_idx; i++) {
+      if (vec[i - 1] > vec[i]) {
+        std::swap(vec[i - 1], vec[i]);
+      }
+    }
+    sorted_idx--;
+  }
+
+}
+
+} // namespace bubble sort
+
+
+namespace select_sort {
+
+/**
+ * @brief  每次选择最小的放在最左边
+ */
+template<typename T>
+void SelectSort(std::vector<T> &vec) {
+  size_t sorted_idx = 0;
+  size_t min_idx;
+  while (sorted_idx < vec.size()) {
+    min_idx = sorted_idx;
+    for (size_t i = sorted_idx; i < vec.size(); i++) {
+      if (vec[min_idx] > vec[i]) {
+        min_idx = i;
+      }
+    }
+    std::swap(vec[sorted_idx], vec[min_idx]);
+    sorted_idx++;
+  }
+}
+
+} // namespace select_sort
 
 TEST(sort_algoritm, corect_test) {
   size_t test_times = 1000;
-  size_t vector_size = 5000;
+  size_t vector_size_factor = 5;
   long long sort_time_use = 0;
 
   for (size_t i = 0; i < test_times; i++) {
-    auto &vec = RandomVecGenerator(vector_size);
+    auto &vec = RandomVecGenerator(vector_size_factor * i);
     auto start = std::chrono::high_resolution_clock::now();
     quick_sort::QuickSort(vec);
     auto end = std::chrono::high_resolution_clock::now();
@@ -168,7 +237,7 @@ TEST(sort_algoritm, corect_test) {
 
   sort_time_use = 0;
   for (size_t i = 0; i < test_times; i++) {
-    auto &vec = RandomVecGenerator(vector_size,{0,10});
+    auto &vec = RandomVecGenerator(vector_size_factor * i);
     auto start = std::chrono::high_resolution_clock::now();
     merge_sort::MergeSort(vec);
     auto end = std::chrono::high_resolution_clock::now();
@@ -176,6 +245,39 @@ TEST(sort_algoritm, corect_test) {
     EXPECT_TRUE(IsSorted(vec));
   }
   std::cout << "MergeSort Time :" << static_cast<double>(sort_time_use) / 1e6 << "ms" << std::endl;
+
+  sort_time_use = 0;
+  for (size_t i = 0; i < test_times; i++) {
+    auto &vec = RandomVecGenerator(vector_size_factor * i, {0, 10});
+    auto start = std::chrono::high_resolution_clock::now();
+    insert_sort::InsertSort(vec);
+    auto end = std::chrono::high_resolution_clock::now();
+    sort_time_use += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    EXPECT_TRUE(IsSorted(vec));
+  }
+  std::cout << "InsertSort Time :" << static_cast<double>(sort_time_use) / 1e6 << "ms" << std::endl;
+
+  sort_time_use = 0;
+  for (size_t i = 0; i < test_times; i++) {
+    auto &vec = RandomVecGenerator(vector_size_factor * i, {0, 10});
+    auto start = std::chrono::high_resolution_clock::now();
+    bubble_sort::BubbleSort(vec);
+    auto end = std::chrono::high_resolution_clock::now();
+    sort_time_use += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    EXPECT_TRUE(IsSorted(vec));
+  }
+  std::cout << "BubbleSort Time :" << static_cast<double>(sort_time_use) / 1e6 << "ms" << std::endl;
+
+  sort_time_use = 0;
+  for (size_t i = 0; i < test_times; i++) {
+    auto &vec = RandomVecGenerator(vector_size_factor * i, {0, 10});
+    auto start = std::chrono::high_resolution_clock::now();
+    select_sort::SelectSort(vec);
+    auto end = std::chrono::high_resolution_clock::now();
+    sort_time_use += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    EXPECT_TRUE(IsSorted(vec));
+  }
+  std::cout << "SelectSort Time :" << static_cast<double>(sort_time_use) / 1e6 << "ms" << std::endl;
 }
 
 int main(int argc, char **argv) {
