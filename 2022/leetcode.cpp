@@ -172,20 +172,20 @@ TEST(easy, T605) {
         return true;
       int flower_inserted = 0;
 
-      auto get = [&flowerbed](int idx){
-        if (idx <0 || idx >=flowerbed.size()) {
+      auto get = [&flowerbed](int idx) {
+        if (idx < 0 || idx >= flowerbed.size()) {
           return 0;
         }
         return flowerbed[idx];
       };
 
       int idx = 0;
-      while(idx < flowerbed.size()) {
-        if (get(idx-1)==0 && get(idx)==0 && get(idx+1)==0) {
+      while (idx < flowerbed.size()) {
+        if (get(idx - 1) == 0 && get(idx) == 0 && get(idx + 1) == 0) {
           flowerbed[idx] = 1;
           flower_inserted++;
-          idx+=2;
-        }else {
+          idx += 2;
+        } else {
           idx++;
         }
         if (flower_inserted >= n) {
@@ -201,22 +201,22 @@ TEST(easy, T605) {
 TEST(mid, T452) { // 重做
   class Solution {
    public:
-    int findMinArrowShots(vector<vector<int>>& points) {
-      auto compare = [](const vector<int>& lhs, const vector<int>& rhs) {
+    int findMinArrowShots(vector<vector<int>> &points) {
+      auto compare = [](const vector<int> &lhs, const vector<int> &rhs) {
         int l_back = lhs.back();
         int r_back = rhs.back();
         return l_back > r_back;
       };
-      int n=0;
+      int n = 0;
       std::sort(points.begin(), points.end(), compare);
       std::vector<bool> is_selected(points.size());
 
-      std::pair<int,int> range{points[0].front(), points[0].back()};
-      n=1;
-      for (size_t i=1; i<points.size(); i++) {
-        if(points[i].back() >= range.first) {
-          range = {std::max(range.first,points[i].front()),points[i].back()};
-        }else {
+      std::pair<int, int> range{points[0].front(), points[0].back()};
+      n = 1;
+      for (size_t i = 1; i < points.size(); i++) {
+        if (points[i].back() >= range.first) {
+          range = {std::max(range.first, points[i].front()), points[i].back()};
+        } else {
           range = {points[i].front(), points[i].back()};
           n++;
         }
@@ -227,25 +227,24 @@ TEST(mid, T452) { // 重做
   };
 
   Solution slo;
-  std::vector<std::vector<int>> points = {{10,16},{2,8},{1,6},{7,12}};
+  std::vector<std::vector<int>> points = {{10, 16}, {2, 8}, {1, 6}, {7, 12}};
   EXPECT_EQ(2, slo.findMinArrowShots(points));
-  points = {{1, 2},{4, 5},{1, 5}};
+  points = {{1, 2}, {4, 5}, {1, 5}};
   EXPECT_EQ(2, slo.findMinArrowShots(points));
-  points = {{0,9},{1,8},{7,8},{1,6},{9,16},{7,13},{7,10},{6,11},{6,9},{9,13}};
+  points = {{0, 9}, {1, 8}, {7, 8}, {1, 6}, {9, 16}, {7, 13}, {7, 10}, {6, 11}, {6, 9}, {9, 13}};
   EXPECT_EQ(3, slo.findMinArrowShots(points));
 }
 
-
-TEST(mid,T763) {
+TEST(mid, T763) {
   class Solution {
    public:
-    vector<int> partitionLabels(const string& s) {
+    vector<int> partitionLabels(const string &s) {
       std::vector<int> slip;
       std::unordered_map<char, std::pair<int, int>> char_num;// 纪录每个字母最小区间
-      for(int i=0; i< s.size(); i++) {
+      for (int i = 0; i < s.size(); i++) {
         auto it = char_num.find(s[i]);
         if (it == char_num.end()) {
-          char_num[s[i]] = {i,i};
+          char_num[s[i]] = {i, i};
         } else {
           it->second.second = i;
         }
@@ -256,12 +255,12 @@ TEST(mid,T763) {
       int range_end = 0;
       while (index < s.size()) {
         char c = s[index];
-        range_end = std::max(char_num[c].second,range_end);
+        range_end = std::max(char_num[c].second, range_end);
         num++;
         if (range_end == index) {
           slip.push_back(num);
           num = 0;
-          range_end = index+1;
+          range_end = index + 1;
         }
         index++;
       }
@@ -271,9 +270,9 @@ TEST(mid,T763) {
 
   Solution slo;
   std::vector<int> slip;
-  slip = {1,1,1,1};
+  slip = {1, 1, 1, 1};
   EXPECT_EQ(slo.partitionLabels("abcd"), slip);
-  slip = {9,7,8};
+  slip = {9, 7, 8};
   EXPECT_EQ(slo.partitionLabels("ababcbacadefegdehijhklij"), slip);
 }
 
@@ -306,12 +305,117 @@ TEST(easy, T122) {
 TEST(mid, T406) {
   class Solution {
    public:
-    vector<vector<int>> reconstructQueue(vector<vector<int>>& people) {
+    vector<vector<int>> reconstructQueue(vector<vector<int>> &people) {
+//      std::sort(people.begin(), people.end(), [](const std::vector<int>& lhs, const std::vector<int>& rhs){
+//        if (lhs[1] != rhs [1]) {
+//          return lhs[1] < rhs[1];
+//        }
+//        return lhs[0] < rhs[0];
+//      });
+//      std::vector<bool> is_selected(people.size());
+//      std::vector<std::vector<int>> sorted_people(people.size(), std::vector<int>(2));
+//      int people_counter = 0;
+//      for(size_t i=0; i<people.size(); i++) {
+//
+//      }
 
+//      std::map<int, std::priority_queue<int>> priority_people; //[之前有多少人][身高]
+//      for (size_t i=0; i< people.size(); i++) {
+//        priority_people[people[i][1]].push(people[i][0]);
+//      }
+//      std::vector<std::vector<int>> sorted_people;
+//      sorted_people.reserve(people.size());
+//
+//      for (size_t i=0; i<priority_people[0].size(); i++) {
+//
+//      }
+//
+//      while(sorted_people.size() < people.size()) {
+//
+//      }
+
+      // 先排身高小并且符合条件的
+      std::map<int, std::vector<int>> priority_people; //[身高][之前有多少人] 之前有多少人的拍成一组
+      std::map<int, int> selected_map; //[身高][前面有多少人大于等于这个身高]
+      for (int i = 0; i < people.size(); i++) {
+        priority_people[people[i][0]].push_back(people[i][1]);
+        selected_map[people[i][0]] = 0;
+      }
+      for (auto &p : priority_people) {
+        std::sort(p.second.begin(), p.second.end(), [](int lhs, int rhs) { return lhs > rhs; });//把能够排最少的放在最后（最优先考虑）
+      }
+
+      std::vector<std::vector<int>> sorted_people;
+      sorted_people.reserve(people.size());
+
+      auto selected_map_func = [&selected_map](int high) {
+        auto it = selected_map.find(high);
+        auto set_it = selected_map.begin();
+        while (true) {
+          set_it->second++;
+          if (it == set_it)
+            break;
+          set_it++;
+        }
+      };
+
+      while (sorted_people.size() < people.size()) {
+        auto it = priority_people.begin();
+        while (true) {
+          if (it->second.empty()) {
+            it++;
+            continue;
+          }
+          int high = it->first;
+          int num = it->second.back();
+          if (num <= selected_map[high]) {// 找到身高最小且前面人最小的了,并且符合条件
+            it->second.pop_back();
+            selected_map_func(high);
+            sorted_people.push_back({high,num});
+            break;
+          }
+          it++;
+        }
+      }
+
+      return sorted_people;
+    }
+  };
+
+  Solution slo;
+  std::vector<std::vector<int>> people;
+  people = {{7,0},{4,4},{7,1},{5,0},{6,1},{5,2}};
+  auto re = slo.reconstructQueue(people);
+}
+
+
+TEST(easy, T665) {
+  class Solution {
+   public:
+    bool checkPossibility(vector<int>& nums) {
+      if(nums.size() <=2)
+        return true;
+
+      bool is_change_once = false;
+
+      if (nums[0] > nums[1]) {
+        nums[0] = nums[1];
+        is_change_once=true;
+      }
+      for (int i = 1; i < nums.size() -1; ++i) {
+        if (nums[i] <= nums[i+1])
+          continue;
+        if (is_change_once)
+          return false;
+        if (nums[i-1] > nums[i+1]) {
+          nums[i+1] = nums[i];
+        }
+        is_change_once = true;
+      }
+      return true;
     }
   };
 }
-
 } // namespace greedy algorithm
 
 
