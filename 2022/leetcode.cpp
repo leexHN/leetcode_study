@@ -371,7 +371,7 @@ TEST(mid, T406) {
           if (num <= selected_map[high]) {// 找到身高最小且前面人最小的了,并且符合条件
             it->second.pop_back();
             selected_map_func(high);
-            sorted_people.push_back({high,num});
+            sorted_people.push_back({high, num});
             break;
           }
           it++;
@@ -384,31 +384,30 @@ TEST(mid, T406) {
 
   Solution slo;
   std::vector<std::vector<int>> people;
-  people = {{7,0},{4,4},{7,1},{5,0},{6,1},{5,2}};
+  people = {{7, 0}, {4, 4}, {7, 1}, {5, 0}, {6, 1}, {5, 2}};
   auto re = slo.reconstructQueue(people);
 }
-
 
 TEST(easy, T665) {
   class Solution {
    public:
-    bool checkPossibility(vector<int>& nums) {
-      if(nums.size() <=2)
+    bool checkPossibility(vector<int> &nums) {
+      if (nums.size() <= 2)
         return true;
 
       bool is_change_once = false;
 
       if (nums[0] > nums[1]) {
         nums[0] = nums[1];
-        is_change_once=true;
+        is_change_once = true;
       }
-      for (int i = 1; i < nums.size() -1; ++i) {
-        if (nums[i] <= nums[i+1])
+      for (int i = 1; i < nums.size() - 1; ++i) {
+        if (nums[i] <= nums[i + 1])
           continue;
         if (is_change_once)
           return false;
-        if (nums[i-1] > nums[i+1]) {
-          nums[i+1] = nums[i];
+        if (nums[i - 1] > nums[i + 1]) {
+          nums[i + 1] = nums[i];
         }
         is_change_once = true;
       }
@@ -417,6 +416,42 @@ TEST(easy, T665) {
   };
 }
 } // namespace greedy algorithm
+
+
+namespace two_pointer {
+
+TEST(easy, T167) {
+  class Solution {
+   public:
+    vector<int> twoSum(vector<int> &numbers, int target) {
+      // numbers is increased
+      int index_l = 0, index_r = numbers.size() - 1;;
+      while (index_l <= index_r) {
+        int l = numbers[index_l];
+        int r = numbers[index_r];
+        if (l + r == target)
+          return {index_l + 1, index_r + 1};
+        else if (l + r > target) {// need dec
+          index_r--;
+        } else { //need inc
+          index_l++;
+        }
+      }
+      return {index_l, index_r};
+    }
+  };
+}
+
+TEST(easy, T88) {
+  class Solution {
+   public:
+    void merge(vector<int> &nums1, int m, vector<int> &nums2, int n) {
+    }
+  };
+}
+
+
+} // namespace two pointer
 
 
 int main(int argc, char **argv) {
