@@ -446,13 +446,179 @@ TEST(easy, T88) {
   class Solution {
    public:
     void merge(vector<int> &nums1, int m, vector<int> &nums2, int n) {
+      int index1 = n + m - 1; // start from end
+      n--;
+      m--;
+      while (m >= 0 && n >= 0) {
+        int n1 = nums1[m], n2 = nums2[n];
+        if (n1 >= n2) {
+          nums1[index1] = n1;
+          m--;
+        } else {
+          nums1[index1] = n2;
+          n--;
+        }
+        index1--;
+      }
+      while (n >= 0) {
+        nums1[index1] = nums2[n];
+        n--;
+        index1--;
+      }
     }
   };
 }
 
+TEST(hard, T76) {
+  class Solution {// 重做
+   public:
+    string minWindow(string s, string t) {
+      // 首先统计t中的字符
+      std::map<char, int> t_char_map;
+      int t_remain = t.size(); // 统计使用t的字符
+      for (auto c : t) {
+        auto it = t_char_map.find(c);
+        if (it == t_char_map.end()) {
+          t_char_map[c] = 1;
+        } else {
+          it->second++;
+        }
+      }
+
+      int l_idx = 0, r_idx = s.size(); //符合条件的s的idx
+      int l_temp = 0;//当前搜索的s的index起点
+      for (int r_temp = 0; r_temp < s.size(); ++r_temp) {
+        auto it = t_char_map.find(s[r_temp]);
+        if (it != t_char_map.end()) {
+          it->second--;
+          if (it->second >= 0) {
+            t_remain--;
+          }
+        }
+
+        while (t_remain == 0) { // 找到了index_range, 尝试缩小左边的l_temp
+          // 移动l_temp
+          auto l_it = t_char_map.find(s[l_temp]);
+          if (l_it != t_char_map.end()) {
+            l_it->second++;
+            if (l_it->second > 0) {
+              t_remain++;
+            }
+          }
+          // 确定是否比原来的index range小，更新原来的index range
+          int origin_range = r_idx - l_idx;
+          int new_range = r_temp - l_temp;
+          if (new_range < origin_range) {
+            l_idx = l_temp;
+            r_idx = r_temp;
+          }
+          l_temp++;
+        }
+      }
+      if (r_idx == s.size()) {
+        return {};
+      } else {
+        return {s.begin() + l_idx, s.begin() + r_idx + 1};
+      }
+    }
+  };
+
+  std::string s, t;
+  s = "ADOBECODEBANC", t = "ABC";
+  Solution slo;
+  EXPECT_EQ(slo.minWindow(s, t), "BANC");
+}
 
 } // namespace two pointer
 
+namespace binary_search{
+
+TEST(easy, T68) { // 重做
+  class Solution {
+   public:
+    int mySqrt(int x) {
+      int l = 1, r = x;
+      if (x==0)
+        return 0;
+      while (l<r) {
+        int mid = (l+r)/2;
+        int mid_2 = mid * mid;
+        int mid_1_2 = (mid+1)*(mid+1);
+        if (mid_2 <= x &&  mid_1_2 > x) {
+          return mid;
+        }else if (mid_1_2 <= x) {
+          l = mid+1;
+        }else {
+          r = mid-1;
+        }
+      }
+      return l;
+    }
+  };
+  Solution slo;
+  slo.mySqrt(9);
+}
+
+TEST(mid, T34) {
+  class Solution {
+   public:
+    vector<int> searchRange(vector<int>& nums, int target) {
+      if (nums.empty()) {
+        return {-1,-1};
+      } else if (nums.size() == 1){
+        if (nums[0] == target) {
+          return {0,0};
+        }else {
+          return {-1,-1};
+        }
+      }
+      int l = IndexBelowEqual(nums, target);
+      if (l == -1)
+        return {-1,-1};
+      int r = IndexUpper(nums, target);
+      return {l,r};
+    }
+    // 查找第一个等于target的index
+    int IndexBelowEqual(std::vector<int>& nums , int target) {
+      int l =0, r = nums.size() -1;
+      while (r - l > 1) {
+        int mid = (l+r)/2;
+        if (nums[mid] >= target) {
+          r = mid;
+        } else {
+          l = mid;
+        }
+      }
+      if (nums[l] == target)
+        return l;
+      else if (nums[r] == target)
+        return r;
+      else
+        return -1;
+    }
+
+    // 查找等于target的最后一个index
+    int IndexUpper(std::vector<int>& nums, int target) {
+      int l = 0, r = nums.size() -1;
+      while (r -l > 1) {
+        int mid = (l+r)/2;
+        if (nums[mid] <= target) {
+          l = mid;
+        } else {
+          r = mid;
+        }
+      }
+      if (nums[r]== target){
+        return r;
+      }else if (nums[l] == target)
+        return l;
+      else
+        return -1;
+    }
+  };
+}
+
+} // namespace binary_search
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
