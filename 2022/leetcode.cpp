@@ -531,25 +531,25 @@ TEST(hard, T76) {
 
 } // namespace two pointer
 
-namespace binary_search{
+namespace binary_search {
 
 TEST(easy, T68) { // 重做
   class Solution {
    public:
     int mySqrt(int x) {
       int l = 1, r = x;
-      if (x==0)
+      if (x == 0)
         return 0;
-      while (l<r) {
-        int mid = (l+r)/2;
+      while (l < r) {
+        int mid = (l + r) / 2;
         int mid_2 = mid * mid;
-        int mid_1_2 = (mid+1)*(mid+1);
-        if (mid_2 <= x &&  mid_1_2 > x) {
+        int mid_1_2 = (mid + 1) * (mid + 1);
+        if (mid_2 <= x && mid_1_2 > x) {
           return mid;
-        }else if (mid_1_2 <= x) {
-          l = mid+1;
-        }else {
-          r = mid-1;
+        } else if (mid_1_2 <= x) {
+          l = mid + 1;
+        } else {
+          r = mid - 1;
         }
       }
       return l;
@@ -562,27 +562,27 @@ TEST(easy, T68) { // 重做
 TEST(mid, T34) {
   class Solution {
    public:
-    vector<int> searchRange(vector<int>& nums, int target) {
+    vector<int> searchRange(vector<int> &nums, int target) {
       if (nums.empty()) {
-        return {-1,-1};
-      } else if (nums.size() == 1){
+        return {-1, -1};
+      } else if (nums.size() == 1) {
         if (nums[0] == target) {
-          return {0,0};
-        }else {
-          return {-1,-1};
+          return {0, 0};
+        } else {
+          return {-1, -1};
         }
       }
       int l = IndexBelowEqual(nums, target);
       if (l == -1)
-        return {-1,-1};
+        return {-1, -1};
       int r = IndexUpper(nums, target);
-      return {l,r};
+      return {l, r};
     }
     // 查找第一个等于target的index
-    int IndexBelowEqual(std::vector<int>& nums , int target) {
-      int l =0, r = nums.size() -1;
+    int IndexBelowEqual(std::vector<int> &nums, int target) {
+      int l = 0, r = nums.size() - 1;
       while (r - l > 1) {
-        int mid = (l+r)/2;
+        int mid = (l + r) / 2;
         if (nums[mid] >= target) {
           r = mid;
         } else {
@@ -598,19 +598,19 @@ TEST(mid, T34) {
     }
 
     // 查找等于target的最后一个index
-    int IndexUpper(std::vector<int>& nums, int target) {
-      int l = 0, r = nums.size() -1;
-      while (r -l > 1) {
-        int mid = (l+r)/2;
+    int IndexUpper(std::vector<int> &nums, int target) {
+      int l = 0, r = nums.size() - 1;
+      while (r - l > 1) {
+        int mid = (l + r) / 2;
         if (nums[mid] <= target) {
           l = mid;
         } else {
           r = mid;
         }
       }
-      if (nums[r]== target){
+      if (nums[r] == target) {
         return r;
-      }else if (nums[l] == target)
+      } else if (nums[l] == target)
         return l;
       else
         return -1;
@@ -619,6 +619,88 @@ TEST(mid, T34) {
 }
 
 } // namespace binary_search
+
+namespace sort_algorithm {
+
+TEST(mid, T215) {
+  class Solution {
+   public:
+    int findKthLargest(vector<int> &nums, int k) {
+      // 利用快速排序搜索到第nums.size()-k的值
+      int idx_need = nums.size() - k;
+      int l = 0, r = nums.size() - 1;
+      while (true) {
+        int now_p_idx = QuitSortUtility(l, r, nums);
+        if (now_p_idx == idx_need) {
+          return nums[now_p_idx];
+        } else if (now_p_idx > idx_need) {
+          r = now_p_idx - 1;
+        } else {
+          l = now_p_idx + 1;
+        }
+      }
+    }
+
+    /**
+     * @return 返回pivot所在的index
+     */
+    int QuitSortUtility(int l, int r, std::vector<int> &nums) {
+      int temp_l = l, temp_r = r;
+      int pivot = nums[l];
+      while (temp_l < temp_r) {
+        // 先找右边(因为左边是空闲)
+        while (temp_l < temp_r && nums[temp_r] >= pivot) {
+          temp_r--;
+        }
+        // move to empty index
+        nums[temp_l] = nums[temp_r];
+        // now right empty
+        while (temp_l < temp_r && nums[temp_l] <= pivot) {
+          temp_l++;
+        }
+        nums[temp_r] = nums[temp_l];
+      }
+      nums[temp_l] = pivot;
+      return temp_l;
+    }
+  };
+}
+
+TEST(mid, T347) {
+  class Solution {
+   public:
+    vector<int> topKFrequent(vector<int> &nums, int k) {
+      std::unordered_map<int, int> data;
+      for (auto i : nums) {
+        auto it = data.find(i);
+        if (it == data.end()) {
+          data[i] = 1;
+        } else {
+          it->second++;
+        }
+      }
+      std::vector<std::pair<const int, int> const *> s_data;
+      s_data.reserve(data.size());
+      for (const auto &item : data) {
+        s_data.push_back(&item);
+      }
+      std::sort(s_data.begin(), s_data.end(), [](const std::pair<const int, int> *lhs,
+                                                 const std::pair<const int, int> *&rhs) {
+        return lhs->second > rhs->second;
+      });
+
+      std::vector<int> ans;
+      ans.reserve(k);
+      for(int i=0; i<k;i++) {
+        ans.push_back(s_data[i]->first);
+      }
+      return ans;
+    }
+  };
+}
+
+} // namespace sort algorithm
+
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
