@@ -691,7 +691,7 @@ TEST(mid, T347) {
 
       std::vector<int> ans;
       ans.reserve(k);
-      for(int i=0; i<k;i++) {
+      for (int i = 0; i < k; i++) {
         ans.push_back(s_data[i]->first);
       }
       return ans;
@@ -700,6 +700,288 @@ TEST(mid, T347) {
 }
 
 } // namespace sort algorithm
+
+
+namespace search {
+
+TEST(mid, T695) {
+  class Solution {
+   public:
+    void SearchUtility(const std::vector<vector<int>> &grid, std::vector<std::vector<bool>> &is_search,
+                       int &area, int row, int col,
+                       const std::vector<std::vector<int>> &search_direction) {
+      int max_row = grid.size();
+      int max_col = grid.front().size();
+      auto is_valid_grid = [&](int row, int col) {
+        if (row < 0 || row >= max_row) {
+          return false;
+        } else if (col < 0 || col >= max_col) {
+          return false;
+        }
+        if (is_search[row][col]) {
+          return false;
+        }
+        if (grid[row][col] == 0) {
+          is_search[row][col] = true;
+          return false;
+        }
+        return true;
+      };
+
+      if (!is_valid_grid(row, col)) {
+        return;
+      }
+
+      is_search[row][col] = true;
+      area++;
+
+      for (int i = 0; i < search_direction.size(); i++) {
+        int current_row = row + search_direction[i][0];
+        int current_col = col + search_direction[i][1];
+        SearchUtility(grid, is_search, area, current_row, current_col, search_direction);
+      }
+    }
+
+    int maxAreaOfIsland(const vector<vector<int>> &grid) {
+      const static std::vector<vector<int>> search_direction{{-1, 0}, {1, 0}, {0, 1}, {0, -1}}; // 上下右左
+      std::vector<std::vector<bool>> is_search(grid.size(), std::vector<bool>(grid.front().size()));
+      int max_area = 0;
+      for (int row = 0; row < grid.size(); row++) {
+        for (int col = 0; col < grid.front().size(); col++) {
+          if (is_search[row][col])
+            continue;
+          int area = 0;
+          SearchUtility(grid, is_search, area, row, col, search_direction);
+          max_area = std::max(max_area, area);
+        }
+      }
+      return max_area;
+    }
+  };
+
+  Solution slo;
+  EXPECT_EQ(slo.maxAreaOfIsland({{1, 1}, {1, 0}}), 3);
+}
+
+TEST(mid, T417) {// 重做！！！！
+  class Solution {
+   public:
+    typedef enum {
+      NONE,
+      LEFT_UP,
+      RIGHT_DOWN,
+      BOTH,
+    } POINT_PROPERTY;
+
+    POINT_PROPERTY SearchUtility(const vector<vector<int>> &heights,
+                                 std::vector<std::vector<POINT_PROPERTY>> &point_property,
+                                 int row,
+                                 int col) {
+      int max_row = heights.size();
+      int max_col = heights.front().size();
+      if (row < 0 || col < 0)
+        return LEFT_UP;
+      if (row >= max_row || col >= max_col) {
+        return RIGHT_DOWN;
+      }
+      if (point_property[row][col] != NONE)
+        return point_property[row][col];
+
+      static const std::vector<std::pair<int, int>> search_dir = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+      POINT_PROPERTY cur_p = NONE;
+
+      for (auto dir : search_dir) {
+        int cur_row = row + dir.first;
+        int cur_col = col + dir.second;
+        POINT_PROPERTY next_p = SearchUtility(heights, point_property, cur_row, cur_col);
+        if (cur_p == NONE) {
+          cur_p = next_p;
+        } else if (next_p == BOTH) {
+          cur_p = BOTH;
+        } else if (next_p != cur_p) {
+          cur_p = BOTH;
+        }
+      }
+      point_property[row][col] = cur_p;
+      return cur_p;
+    }
+
+    vector<vector<int>> pacificAtlantic(const vector<vector<int>> &heights) {
+      std::vector<std::vector<POINT_PROPERTY>> point_property(heights.size(),
+                                                              std::vector<POINT_PROPERTY>(heights.front().size(),
+                                                                                          NONE));
+      std::vector<std::vector<int>> ans;
+      for (int row = 0; row < heights.size(); row++) {
+        for (int col = 0; col < heights.front().size(); col++) {
+          auto cur_p = SearchUtility(heights, point_property, row, col);
+          if (cur_p == BOTH)
+            ans.push_back({row, col});
+        }
+      }
+      return ans;
+    }
+  };
+
+  Solution slo;
+  slo.pacificAtlantic({{1, 2, 2, 3, 5}, {3, 2, 3, 4, 4}, {2, 4, 5, 3, 1}, {6, 7, 1, 4, 5}, {5, 1, 1, 2, 4}});
+}
+
+TEST(mid, T46) {
+  class Solution {
+   public:
+    void SearchUtility(const std::vector<int> &nums, std::vector<bool> &is_visited,
+                       std::vector<std::vector<int>> &ans, std::vector<int> &temp, int idx) {
+      is_visited[idx] = true;
+      temp.push_back(nums[idx]);
+      if (temp.size() == nums.size()) {
+        ans.push_back(temp);
+        is_visited[idx] = false;
+        temp.pop_back();
+        return;
+      }
+
+      for (int i = 0; i < nums.size(); i++) {
+        if (!is_visited[i]) {
+          SearchUtility(nums, is_visited, ans, temp, i);
+        }
+      }
+      temp.pop_back();
+      is_visited[idx] = false;
+    }
+
+    vector<vector<int>> permute(const vector<int> &nums) {
+      if (nums.size() <= 1) {
+        return {nums};
+      }
+      std::vector<std::vector<int>> ans;
+      ans.reserve(nums.size() * (nums.size() - 1));
+      std::vector<int> temp;
+      temp.reserve(nums.size());
+      std::vector<bool> is_visited(nums.size(), false);
+      for (int i = 0; i < nums.size(); i++) {
+        SearchUtility(nums, is_visited, ans, temp, i);
+      }
+      return ans;
+    }
+  };
+
+  Solution slo;
+  EXPECT_EQ(slo.permute({1, 2, 3}).size(), 6);
+}
+
+TEST(mid, T77) {
+  class Solution {
+   public:
+    void Dfs(std::vector<std::vector<int>> &ans,
+             std::vector<bool> &is_visited,
+             std::vector<int> &temp,
+             int n,
+             int k,
+             int idx) {
+      temp.push_back(idx+1);
+      if (temp.size() == k) {
+        ans.push_back(temp);
+        temp.pop_back();
+        return;
+      }
+
+      is_visited[idx] = true;
+      for (int i = idx+1; i <= n; i++) {
+        if (is_visited[i-1])
+          continue;
+        Dfs(ans, is_visited, temp, n, k, i-1);
+      }
+
+      is_visited[idx] = false;
+      temp.pop_back();
+    }
+
+    vector<vector<int>> combine(int n, int k) {
+      std::vector<std::vector<int>> ans;
+      std::vector<int> temp;
+      temp.reserve(k);
+      std::vector<bool> is_visited(n, false);
+      for (int i=1; i<=n; i++) {
+        Dfs(ans, is_visited, temp, n, k, i-1);
+      }
+      return ans;
+    }
+
+  };
+
+  Solution slo;
+  slo.combine(4,2);
+}
+
+TEST(mid, T79) {
+  class Solution {
+   public:
+    void Dfs(const vector<vector<char>>& board,const string& word,
+             std::vector<std::vector<bool>>& is_visited,
+             std::string& cur_string,
+             bool &is_found, int row, int col) {
+      if (is_found)
+        return;
+      int max_row = board.size();
+      int max_col = board.front().size();
+      if (row < 0 || col<0 || row >= max_row || col >= max_col)
+        return;
+
+      if (is_visited[row][col])
+        return;
+
+      cur_string.push_back(board[row][col]);
+      is_visited[row][col] = true;
+
+      if (cur_string.size() > word.size()) {
+        cur_string.pop_back();
+        is_visited[row][col] = false;
+        return;
+      }
+      if (word.substr(0, cur_string.size()) != cur_string) {
+        cur_string.pop_back();
+        is_visited[row][col] = false;
+        return;
+      }
+      if(cur_string.size() == word.size()) {
+        is_found = true;
+        cur_string.pop_back();
+        is_visited[row][col] = false;
+        return;
+      }
+
+      is_visited[row][col] = true;
+      static const std::vector<std::pair<int,int>> dir = {{-1,0}, {1,0}, {0,1}, {0,-1}};
+      for(auto& d: dir) {
+        int cur_row = row + d.first;
+        int cur_col = col + d.second;
+        Dfs(board,word,is_visited,cur_string,is_found, cur_row, cur_col);
+      }
+      cur_string.pop_back();
+      is_visited[row][col] = false;
+    }
+
+    bool exist(const vector<vector<char>>& board,const string& word) {
+      std::vector<std::vector<bool>> is_visited(board.size(), std::vector<bool>(board.front().size()));
+      std::string cur_string;
+      bool is_found = false;
+      for(int row = 0; row < board.size(); row++) {
+        for(int col = 0; col < board.front().size(); col++) {
+          Dfs(board,word,is_visited,cur_string, is_found, row, col);
+          if (is_found)
+            return is_found;
+        }
+      }
+      return false;
+    }
+  };
+
+  Solution slo;
+  slo.exist({{'A','B','C','E'},{'S','F','C','S'},{'A','D','E','E'}}, "ABCCED");
+}
+} // namespace of search
+
+
 
 
 int main(int argc, char **argv) {
