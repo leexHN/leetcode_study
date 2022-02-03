@@ -2,6 +2,7 @@
 // Created by lix on 1/5/22.
 //
 #include <iostream>
+#include <utility>
 #include <vector>
 #include <algorithm>
 #include <gtest/gtest.h>
@@ -13,6 +14,8 @@
 #include <list>
 #include <unordered_set>
 #include <numeric>
+#include <queue>
+#include <stack>
 
 using namespace std;
 
@@ -878,7 +881,7 @@ TEST(mid, T77) {
              int n,
              int k,
              int idx) {
-      temp.push_back(idx+1);
+      temp.push_back(idx + 1);
       if (temp.size() == k) {
         ans.push_back(temp);
         temp.pop_back();
@@ -886,10 +889,10 @@ TEST(mid, T77) {
       }
 
       is_visited[idx] = true;
-      for (int i = idx+1; i <= n; i++) {
-        if (is_visited[i-1])
+      for (int i = idx + 1; i <= n; i++) {
+        if (is_visited[i - 1])
           continue;
-        Dfs(ans, is_visited, temp, n, k, i-1);
+        Dfs(ans, is_visited, temp, n, k, i - 1);
       }
 
       is_visited[idx] = false;
@@ -901,8 +904,8 @@ TEST(mid, T77) {
       std::vector<int> temp;
       temp.reserve(k);
       std::vector<bool> is_visited(n, false);
-      for (int i=1; i<=n; i++) {
-        Dfs(ans, is_visited, temp, n, k, i-1);
+      for (int i = 1; i <= n; i++) {
+        Dfs(ans, is_visited, temp, n, k, i - 1);
       }
       return ans;
     }
@@ -910,21 +913,21 @@ TEST(mid, T77) {
   };
 
   Solution slo;
-  slo.combine(4,2);
+  slo.combine(4, 2);
 }
 
 TEST(mid, T79) {
   class Solution {
    public:
-    void Dfs(const vector<vector<char>>& board,const string& word,
-             std::vector<std::vector<bool>>& is_visited,
-             std::string& cur_string,
+    void Dfs(const vector<vector<char>> &board, const string &word,
+             std::vector<std::vector<bool>> &is_visited,
+             std::string &cur_string,
              bool &is_found, int row, int col) {
       if (is_found)
         return;
       int max_row = board.size();
       int max_col = board.front().size();
-      if (row < 0 || col<0 || row >= max_row || col >= max_col)
+      if (row < 0 || col < 0 || row >= max_row || col >= max_col)
         return;
 
       if (is_visited[row][col])
@@ -943,7 +946,7 @@ TEST(mid, T79) {
         is_visited[row][col] = false;
         return;
       }
-      if(cur_string.size() == word.size()) {
+      if (cur_string.size() == word.size()) {
         is_found = true;
         cur_string.pop_back();
         is_visited[row][col] = false;
@@ -951,23 +954,23 @@ TEST(mid, T79) {
       }
 
       is_visited[row][col] = true;
-      static const std::vector<std::pair<int,int>> dir = {{-1,0}, {1,0}, {0,1}, {0,-1}};
-      for(auto& d: dir) {
+      static const std::vector<std::pair<int, int>> dir = {{-1, 0}, {1, 0}, {0, 1}, {0, -1}};
+      for (auto &d : dir) {
         int cur_row = row + d.first;
         int cur_col = col + d.second;
-        Dfs(board,word,is_visited,cur_string,is_found, cur_row, cur_col);
+        Dfs(board, word, is_visited, cur_string, is_found, cur_row, cur_col);
       }
       cur_string.pop_back();
       is_visited[row][col] = false;
     }
 
-    bool exist(const vector<vector<char>>& board,const string& word) {
+    bool exist(const vector<vector<char>> &board, const string &word) {
       std::vector<std::vector<bool>> is_visited(board.size(), std::vector<bool>(board.front().size()));
       std::string cur_string;
       bool is_found = false;
-      for(int row = 0; row < board.size(); row++) {
-        for(int col = 0; col < board.front().size(); col++) {
-          Dfs(board,word,is_visited,cur_string, is_found, row, col);
+      for (int row = 0; row < board.size(); row++) {
+        for (int col = 0; col < board.front().size(); col++) {
+          Dfs(board, word, is_visited, cur_string, is_found, row, col);
           if (is_found)
             return is_found;
         }
@@ -977,8 +980,366 @@ TEST(mid, T79) {
   };
 
   Solution slo;
-  slo.exist({{'A','B','C','E'},{'S','F','C','S'},{'A','D','E','E'}}, "ABCCED");
+  slo.exist({{'A', 'B', 'C', 'E'}, {'S', 'F', 'C', 'S'}, {'A', 'D', 'E', 'E'}}, "ABCCED");
 }
+
+TEST(hard, T51) {
+  class Solution {
+   public:
+    bool IsValid(const std::vector<std::string> &queen, int row, int col) {
+      if (queen[row][col] != 'Q') {
+        return true;
+      }
+      int n = queen.size();
+      // row check
+      for (int i = 0; i < n; i++) {
+        if (i != row && queen[i][col] == 'Q')
+          return false;
+      }
+      // col check
+      for (int i = 0; i < n; i++) {
+        if (i != col && queen[row][i] == 'Q')
+          return false;
+      }
+      // \dir check
+      int cur_row = row - 1;
+      int cur_col = col - 1;
+      while (cur_row >= 0 && cur_col >= 0) {
+        if (queen[cur_row][cur_col] == 'Q')
+          return false;
+        cur_row--;
+        cur_col--;
+      }
+      cur_row = row + 1;
+      cur_col = col + 1;
+      while (cur_row < n && cur_col < n) {
+        if (queen[cur_row][cur_col] == 'Q')
+          return false;
+        cur_row++;
+        cur_col++;
+      }
+      // /dir check
+      cur_row = row - 1;
+      cur_col = col + 1;
+      while (cur_row < n && cur_col < n && cur_row >= 0 && cur_col >= 0) {
+        if (queen[cur_row][cur_col] == 'Q')
+          return false;
+        cur_row--;
+        cur_col++;
+      }
+      cur_row = row + 1;
+      cur_col = col - 1;
+      while (cur_row < n && cur_col < n && cur_row >= 0 && cur_col >= 0) {
+        if (queen[cur_row][cur_col] == 'Q')
+          return false;
+        cur_row++;
+        cur_col--;
+      }
+      return true;
+    }
+
+    bool IsValid(const std::vector<std::string> &queen) {
+      for (int i = 0; i < queen.size(); i++) {
+        for (int j = 0; j < queen.front().size(); j++) {
+          if (!IsValid(queen, i, j))
+            return false;
+        }
+      }
+      return true;
+    }
+
+    void Dfs(std::vector<std::string> &queen,
+             int &level) {
+
+      if (level == queen.size()) {
+//        if (IsValid(queen)) {
+        queens_ptr->push_back(queen);
+        return;
+//        } else {
+//          return;
+//        }
+      }
+
+      int row = level;
+
+      for (int col = 0; col < queen.size(); col++) {
+//        if (col_is_visited[col])
+//          continue;
+        level++;
+        queen[row][col] = 'Q';
+
+        if (!IsValid(queen)) {
+          level--;
+          queen[row][col] = '.';
+          continue;
+        }
+
+        Dfs(queen, level);
+
+        level--;
+        queen[row][col] = '.';
+      }
+
+    }
+
+    vector<vector<string>> solveNQueens(int n) {
+      std::vector<std::vector<string>> queens;
+      std::vector<std::string> queen(n, std::string(n, '.'));
+      queens_ptr = &queens;
+
+      for (int col = 0; col < n; col++) {
+        int level = 1;
+        int row = 0;
+        queen[row][col] = 'Q';
+
+        Dfs(queen, level);
+
+        queen[row][col] = '.';
+      }
+
+      return queens;
+    }
+    std::vector<std::vector<string>> *queens_ptr;
+  };
+  Solution slo;
+  auto ans = slo.solveNQueens(4);
+}
+
+TEST(mid, T934) {
+  class Solution {
+   public:
+    struct QueueData {
+      QueueData(int _row, int _col, int _dis) : row(_row), col(_col), dis(_dis) {}
+      int row;
+      int col;
+      int dis;
+      bool operator<(const QueueData &rhs) const {
+        return this->dis > rhs.dis;
+      }
+    };
+    // 相当于求取两个岛屿之间的最短距离
+    /*
+    // 从岛屿1出发到岛屿2，贪心算法搜索
+    void Island0Set(const std::vector<std::vector<int>> &grid,
+                    std::vector<std::vector<bool>> &is_land0,
+                    std::priority_queue<QueueData> &queue_data) {
+      // 先找到一个岛屿
+      int row_temp = -1;
+      int col_temp = -1;
+      for (int row = 0; row < grid.size(); row++) {
+        for (int col = 0; col < grid[row].size(); col++) {
+          if (grid[row][col] == 1) {
+            row_temp = row;
+            col_temp = col;
+            break;
+          }
+        }
+        if (row_temp >= 0)
+          break;
+      }
+      int max_row = grid.size();
+      int max_col = grid.front().size();
+      auto is_movable = [&](int row, int col) {
+        if (row < 0 || col < 0 || row >= max_row || col >= max_col || grid[row][col] == 0 || is_land0[row][col])
+          return false;
+        return true;
+      };
+
+      // using dfs
+      std::stack<std::pair<int,int>> search_stack;
+      search_stack.push({row_temp,col_temp});
+
+      while(!search_stack.empty()) {
+        int cur_row = search_stack.top().first;
+        int cur_col = search_stack.top().second;
+        bool is_push = false;
+
+        for(const auto& dir: *search_dir_ptr) {
+          row_temp =cur_row+dir.first;
+          col_temp =cur_col+dir.second;
+          if (is_movable(row_temp, col_temp)) {
+            search_stack.push({row_temp, col_temp});
+            is_push = true;
+          }
+        }
+
+        if(is_push)
+          continue;
+
+        is_land0[cur_row][cur_col] = true;
+        search_stack.pop();
+      }
+
+    }
+     */
+    // 先随机找一个有陆地的地方
+    std::pair<int, int> GetLand(const std::vector<std::vector<int>> &grid) {
+      // 先找到一个岛屿
+      int row_temp = -1;
+      int col_temp = -1;
+      for (int row = 0; row < grid.size(); row++) {
+        for (int col = 0; col < grid[row].size(); col++) {
+          if (grid[row][col] == 1) {
+            row_temp = row;
+            col_temp = col;
+            break;
+          }
+        }
+        if (row_temp >= 0)
+          break;
+      }
+      return {row_temp, col_temp};
+    }
+
+    int shortestBridge(const vector<vector<int>> &grid) {
+      const static std::vector<std::pair<int, int>> search_dir = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+//      std::vector<std::vector<bool>> island0(grid.size(), std::vector<bool>(grid.front().size()));
+      std::vector<std::vector<bool>> is_visited(grid.size(), std::vector<bool>(grid.front().size()));
+//      search_dir_ptr = &search_dir;
+
+      std::priority_queue<QueueData> queue_data;
+      auto land_temp = GetLand(grid);
+      queue_data.emplace(land_temp.first, land_temp.second, 0);
+      is_visited[land_temp.first][land_temp.second] = true;
+
+      auto point_valid = [&grid](int row, int col) {
+        int max_row = grid.size();
+        int max_col = grid.front().size();
+        if (row < 0 || col < 0 || row >= max_row || col >= max_col)
+          return false;
+        return true;
+      };
+
+      while (!queue_data.empty()) {
+        int cur_row = queue_data.top().row;
+        int cur_col = queue_data.top().col;
+        int cur_dis = queue_data.top().dis;
+
+        queue_data.pop();
+
+        for (const auto dir : search_dir) {
+          int row_temp = cur_row + dir.first;
+          int col_temp = cur_col + dir.second;
+          if (point_valid(row_temp, col_temp) && !is_visited[row_temp][col_temp]) {
+            if (cur_dis == 0 && grid[row_temp][col_temp] == 1) { // in land0
+              is_visited[row_temp][col_temp] = true;
+              queue_data.emplace(row_temp, col_temp, 0);
+            } else {
+              if (grid[row_temp][col_temp] == 1) {
+                return cur_dis;
+              } else {
+                is_visited[row_temp][col_temp] = true;
+                queue_data.emplace(row_temp, col_temp, cur_dis + 1);
+              }
+            }
+          }
+        }
+
+      }
+      return 0;
+    }
+
+//    const std::vector<std::pair<int, int>> *search_dir_ptr;
+  };
+
+  Solution slo;
+  EXPECT_EQ(slo.shortestBridge({{0, 1, 0}, {0, 0, 0}, {0, 0, 1}}), 2);
+}
+
+TEST(hard, T126) {
+  // 重做， 目前还没有理解求法
+  /*
+  class Solution {
+   public:
+
+    struct LadderData {
+      explicit LadderData(int idx, const std::string& str,const std::vector<bool>& _is_used,const std::vector<std::string>& _path) {
+        is_used = _is_used;
+        path = _path;
+        path.push_back(str);
+        if (idx >= 0)
+          is_used[idx] = true;
+      }
+
+      std::vector<bool> is_used;
+      std::vector<std::string> path;
+      bool is_valid;
+    };
+
+    bool IsValid(int idx1, int idx2, const vector<string> &wordList) {
+      const auto &word1 = wordList[idx1];
+      const auto &word2 = wordList[idx2];
+      return IsValid(word1, word2);
+    }
+
+    bool IsValid(const std::string &word1, const std::string &word2) {
+      int diff_counter = 0;
+      for (int i = 0; i < word1.size(); i++) {
+        if (word1[i] != word2[i])
+          diff_counter++;
+        if (diff_counter > 1)
+          return false;
+      }
+      return diff_counter == 1;
+    }
+
+    vector<vector<string>> findLadders(string beginWord, string endWord,const vector<string> &wordList) {
+      // 1.find end word
+      int end_word_idx = -1;
+      for (int i = 0; i < wordList.size(); i++) {
+        const auto &word = wordList[i];
+        if (word == endWord) {
+          end_word_idx = i;
+          break;
+        }
+      }
+      if (end_word_idx == -1)
+        return {};
+
+      // 2.init bfs data
+      std::queue<LadderData> data;
+      std::vector<std::vector<std::string>> ans;
+      bool is_found = false;
+      int level = 0;
+      data.emplace(-1, beginWord, std::vector<bool>(wordList.size()), std::vector<std::string>());
+
+      while (level < wordList.size() && !is_found){
+        int n_data = data.size();
+        std::cout << "Current Search Level " << level << std::endl;
+        std::cout << "N_Data = " << n_data << std::endl;
+        std::cout << "======================\n";
+        while(n_data > 0) {
+          const auto & cur_word = data.front().path.back();
+          for (int i=0; i< data.front().is_used.size(); i++) {
+            if(data.front().is_used[i])
+              continue;
+            if (!IsValid(cur_word, wordList[i]))
+              continue;
+            data.emplace(i, wordList[i], data.front().is_used, data.front().path);
+            if (i == end_word_idx)
+              is_found = true;
+          }
+          data.pop();
+          n_data--;
+        }
+
+        level++;
+      }
+
+      while(!data.empty() && is_found) {
+        if (data.front().path.back() == endWord) {
+          ans.emplace_back(std::move(data.front().path));
+        }
+        data.pop();
+      }
+
+      return ans;
+    }
+  };
+  */
+
+}
+
 } // namespace of search
 
 
