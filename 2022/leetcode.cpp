@@ -1342,6 +1342,220 @@ TEST(hard, T126) {
 
 } // namespace of search
 
+namespace dynamic_program {
+
+TEST(easy, T70) {
+  class Solution {
+   public:
+    int climbStairs(int n) {
+      // 因为求取n的解的数量，可以转化为n-1的解加上n-2的解(因为n-1再加上1就可以到达n, 同理n-2加上2)
+      // 即状态转移方程可以得到 (n) = (n-1) + (n-2) 括号表示该序列的解
+      // 选取边界条件n至少需要大于2
+      // n=1 解为1
+      // n=2 解为2 1+1 或 2
+      if (n <= 2)
+        return n;
+
+      // 原始
+      std::vector<long> dp(n);
+      dp[0] = 1;
+      dp[1] = 2;
+      for (int i = 2; i < dp.size(); i++) {
+        dp[i] = dp[i - 1] + dp[i - 2];
+      }
+//      return dp.back();
+
+      // 简化
+      unsigned int dp_pre_2 = 1; // n-2
+      unsigned int dp_pre_1 = 2; // n-1
+      unsigned long cur = 0;
+      for (int i = 3; i <= n; i++) {
+        cur = dp_pre_1 + dp_pre_2;
+        dp_pre_2 = dp_pre_1;
+        dp_pre_1 = cur;
+      }
+      return cur;
+    }
+
+  };
+
+  Solution slo;
+  slo.climbStairs(50);
+}
+
+TEST(mid, T198) {
+  class Solution {
+   public:
+    int rob(vector<int> &nums) {
+      // 动态规划
+      // 假设(k) 表示第k个被选中的情况下的最优解
+      // (k) = max[(k-2) + v(k), (k-3) + v(k)] // v(k)表示第k个的价值
+      if (nums.size() <= 2) {
+        std::sort(nums.begin(), nums.end());
+        return nums.back();
+      }
+      if (nums.size() == 3) {
+        return std::max(nums[1], nums[0] + nums[2]);
+      }
+      std::vector<int> dp(nums.size());
+      dp[0] = nums[0];
+      dp[1] = nums[1];
+      dp[2] = nums[0] + nums[2];
+
+      for (int i = 3; i < dp.size(); i++) {
+        dp[i] = std::max(dp[i - 2] + nums[i], dp[i - 3] + nums[i]);
+      }
+      return std::max(dp[dp.size() - 1], dp[dp.size() - 2]);
+    }
+  };
+}
+
+TEST(mid, T413) {
+  // 重做
+  class Solution {
+   public:
+    int numberOfArithmeticSlices(vector<int> &nums) {
+      if (nums.size() < 3)
+        return 0;
+    }
+  };
+}
+
+TEST(mid, T64) {
+  class Solution {
+   public:
+    int minPathSum(const vector<vector<int>> &grid) {
+      // 只能向下和向右走， 对于一个点只能从[row-1][col] 或者 [row][col-1]变化而来
+      std::vector<std::vector<int>> path(grid.size(), std::vector<int>(grid.front().size()));
+      path[0][0] = grid[0][0];
+      for (int col = 1; col < grid.front().size(); col++) {
+        path[0][col] = path[0][col - 1] + grid[0][col];
+      }
+      for (int row = 1; row < grid.size(); row++) {
+        path[row][0] = path[row - 1][0] + grid[row][0];
+      }
+
+      for (int row = 1; row < grid.size(); row++) {
+        for (int col = 1; col < grid.front().size(); col++) {
+          path[row][col] = std::min(path[row - 1][col], path[row][col - 1]) + grid[row][col];
+        }
+      }
+      return path.back().back();
+    }
+  };
+
+  Solution slo;
+  slo.minPathSum({{1, 3, 1}, {1, 5, 1}, {4, 2, 1}});
+}
+
+TEST(mid, T542) {
+  class Solution {
+   public:
+    vector<vector<int>> updateMatrix(const vector<vector<int>> &mat) {
+      std::vector<std::vector<int>> right_down(mat.size(), std::vector<int>(mat.front().size()));
+      std::vector<std::vector<int>> left_up(mat.size(), std::vector<int>(mat.front().size()));
+      const int max_dist = std::numeric_limits<int>::max();
+
+      int dist;
+      int max_row_idx = mat.size() - 1;
+      int max_col_dix = mat.front().size() - 1;
+
+      // init right
+      dist = max_dist;
+      for (int col = 0; col <= max_col_dix; col++) {
+        int row = 0;
+        if (mat[row][col] == 0) {
+          dist = 0;
+        } else {
+          dist = dist == max_dist ? max_dist : dist + 1;
+        }
+        right_down[row][col] = dist;
+      }
+      // init down
+      dist = max_dist;
+      for (int row = 0; row <= max_row_idx; row++) {
+        int col = 0;
+        if (mat[row][col] == 0) {
+          dist = 0;
+        } else {
+          dist = dist == max_dist ? max_dist : dist + 1;
+        }
+        right_down[row][col] = dist;
+      }
+
+      // init left
+      dist = max_dist;
+      for (int col = max_col_dix; col >= 0; col--) {
+        int row = max_row_idx;
+        if (mat[row][col] == 0) {
+          dist = 0;
+        } else {
+          dist = dist == max_dist ? max_dist : dist + 1;
+        }
+        left_up[row][col] = dist;
+      }
+      // init up
+      dist = max_dist;
+      for (int row = max_row_idx; row >= 0; row--) {
+        int col = max_col_dix;
+        if (mat[row][col] == 0) {
+          dist = 0;
+        } else {
+          dist = dist == max_dist ? max_dist : dist + 1;
+        }
+        left_up[row][col] = dist;
+      }
+
+      // set right_down
+      for (int row = 1; row <= max_row_idx; row++) {
+        for (int col = 1; col <= max_col_dix; col++) {
+          if (mat[row][col] == 0) {
+            right_down[row][col] = 0;
+          } else {
+            right_down[row][col] = std::min(right_down[row][col - 1], right_down[row - 1][col]);
+            right_down[row][col] = right_down[row][col] == max_dist ? max_dist : (right_down[row][col] + 1);
+          }
+        }
+      }
+
+      // set left_up
+      for (int row = max_row_idx - 1; row >= 0; row--) {
+        for (int col = max_col_dix - 1; col >= 0; col--) {
+          if (mat[row][col] == 0) {
+            left_up[row][col] = 0;
+          } else {
+            left_up[row][col] = std::min(left_up[row+1][col], left_up[row][col+1]);
+            left_up[row][col] = left_up[row][col] == max_dist ? max_dist : (left_up[row][col] + 1);
+          }
+        }
+      }
+
+      // set ans to right_down
+      for (int row = 0; row <= max_row_idx; row++) {
+        for (int col = 0; col <= max_col_dix; col++) {
+          right_down[row][col] = std::min(right_down[row][col], left_up[row][col]);
+        }
+      }
+
+      return right_down;
+    }
+  };
+
+  Solution slo;
+  slo.updateMatrix({{0,0,1,0,1,1,1,0,1,1},
+                    {1,1,1,1,0,1,1,1,1,1},
+                    {1,1,1,1,1,0,0,0,1,1},
+                    {1,0,1,0,1,1,1,0,1,1},
+                    {0,0,1,1,1,0,1,1,1,1},
+                    {1,0,1,1,1,1,1,1,1,1},
+                    {1,1,1,1,0,1,0,1,0,1},
+                    {0,1,0,0,0,1,0,0,1,1},
+                    {1,1,1,0,1,1,0,1,0,1},
+                    {1,0,1,1,1,0,1,1,1,0}});
+}
+
+}// namespace of dynamic program
+
 
 
 
