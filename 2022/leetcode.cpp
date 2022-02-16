@@ -1524,7 +1524,7 @@ TEST(mid, T542) {
           if (mat[row][col] == 0) {
             left_up[row][col] = 0;
           } else {
-            left_up[row][col] = std::min(left_up[row+1][col], left_up[row][col+1]);
+            left_up[row][col] = std::min(left_up[row + 1][col], left_up[row][col + 1]);
             left_up[row][col] = left_up[row][col] == max_dist ? max_dist : (left_up[row][col] + 1);
           }
         }
@@ -1542,17 +1542,131 @@ TEST(mid, T542) {
   };
 
   Solution slo;
-  slo.updateMatrix({{0,0,1,0,1,1,1,0,1,1},
-                    {1,1,1,1,0,1,1,1,1,1},
-                    {1,1,1,1,1,0,0,0,1,1},
-                    {1,0,1,0,1,1,1,0,1,1},
-                    {0,0,1,1,1,0,1,1,1,1},
-                    {1,0,1,1,1,1,1,1,1,1},
-                    {1,1,1,1,0,1,0,1,0,1},
-                    {0,1,0,0,0,1,0,0,1,1},
-                    {1,1,1,0,1,1,0,1,0,1},
-                    {1,0,1,1,1,0,1,1,1,0}});
+  slo.updateMatrix({{0, 0, 1, 0, 1, 1, 1, 0, 1, 1},
+                    {1, 1, 1, 1, 0, 1, 1, 1, 1, 1},
+                    {1, 1, 1, 1, 1, 0, 0, 0, 1, 1},
+                    {1, 0, 1, 0, 1, 1, 1, 0, 1, 1},
+                    {0, 0, 1, 1, 1, 0, 1, 1, 1, 1},
+                    {1, 0, 1, 1, 1, 1, 1, 1, 1, 1},
+                    {1, 1, 1, 1, 0, 1, 0, 1, 0, 1},
+                    {0, 1, 0, 0, 0, 1, 0, 0, 1, 1},
+                    {1, 1, 1, 0, 1, 1, 0, 1, 0, 1},
+                    {1, 0, 1, 1, 1, 0, 1, 1, 1, 0}});
 }
+
+namespace bag_problem {
+TEST(mid, T416) {//重做
+  class Solution {
+   public:
+
+    bool canPartition(vector<int> &nums) {
+      int sum = std::accumulate(nums.begin(), nums.end(), 0);
+      if (sum%2 != 0)
+        return false;
+      sum = sum/2;
+      std::vector<std::vector<bool>> dp(nums.size()+1, std::vector<bool>(sum+1));
+      for(int i=0; i<= nums.size(); i++) {
+        dp[i][0] = true; // 和为0任何i都能达到
+      }
+      for(int i=1; i<= nums.size(); i++) {
+        for (int j=0; j<=sum; j++) { // 和为j至少也需要i个数(因为nums[i]>=1)
+          if(j-nums[i-1]>=0) {
+            dp[i][j] = dp[i-1][j] || dp[i-1][j-nums[i-1]];
+          }else {
+            dp[i][j] = dp[i-1][j];
+          }
+        }
+      }
+      return dp[nums.size()][sum];
+    }
+  };
+  class SolutionSpace {
+   public:
+    bool canPartition(vector<int>& nums) {
+      int sum = std::accumulate(nums.begin(), nums.end(), 0);
+      if (sum%2 != 0 )
+        return false;
+      sum /= 2;
+      std::vector<bool> dp(sum+1);
+      dp[0] = true; // 和为0一定能保证
+      for(int i=1; i<= nums.size(); i++) {
+        for(int j=sum;j>=0; j--) { // 0-1背包问题反向递归
+          if(j-nums[i-1] >=0){
+            dp[j] = dp[j] || dp[j-nums[i-1]];
+          }
+        }
+      }
+      return dp.back();
+    }
+  };
+  std::vector<int> nums{1,1,2,2};
+  SolutionSpace slo;
+  EXPECT_TRUE(slo.canPartition(nums));
+}
+
+TEST(mid, T474) {
+  class Solution {
+   public:
+    std::pair<int,int> Str01(const std::string& str) {
+      int zeros = 0, ones = 0;
+      for(const auto c : str) {
+        if(c=='0')
+          zeros++;
+        else{
+          ones++;
+        }
+      }
+      return {zeros,ones};
+    }
+    int findMaxForm(vector<string>& strs, int m, int n) {
+      std::vector<std::vector<std::vector<int>>> dp(strs.size()+1, std::vector<std::vector<int>>( m+1, std::vector<int>(n+1)));
+      for(int i=1; i<=strs.size(); i++) {
+        for(int j=0; j<=m;j++){
+          for(int k=0;k<=n;k++) {
+            auto zero_one = Str01(strs[i-1]);
+            if(j - zero_one.first >=0 && k - zero_one.second >= 0) {
+              dp[i][j][k] = std::max(dp[i-1][j-zero_one.first][k-zero_one.second]+1, dp[i-1][j][k]);
+            } else {
+              dp[i][j][k] = dp[i-1][j][k];
+            }
+          }
+        }
+      }
+      return dp.back().back().back();
+    }
+  };
+
+  class SolutionSpace {
+   public:
+    std::pair<int,int> Str01(const std::string& str) {
+      int zeros = 0, ones = 0;
+      for(const auto c : str) {
+        if(c=='0')
+          zeros++;
+        else{
+          ones++;
+        }
+      }
+      return {zeros,ones};
+    }
+
+    int findMaxForm(vector<string>& strs, int m, int n) {
+      std::vector<std::vector<int>> dp(m+1, std::vector<int>(n+1));
+      for(int i=1; i<= strs.size(); i++) {
+        for(int j=m; j>=0; j--) {// 0-1问题，反向求解
+          for(int k=n; k>=0; k--) {
+            auto zero_one = Str01(strs[i-1]);
+            if(j-zero_one.first >=0 && k-zero_one.second>=0)
+            dp[j][k] = std::max(dp[j][k], dp[j-zero_one.first][k-zero_one.second]+1);
+          }
+        }
+      }
+      return dp.back().back();
+    }
+  };
+}
+
+}//namespace of bag problem
 
 }// namespace of dynamic program
 
