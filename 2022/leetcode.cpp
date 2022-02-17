@@ -1666,6 +1666,52 @@ TEST(mid, T474) {
   };
 }
 
+TEST(mid, T322) {
+  class Solution {
+   public:
+    int coinChange(vector<int>& coins, int amount) {
+      const int invalid = std::numeric_limits<int>::max();
+      std::vector<std::vector<int>> dp(coins.size()+1, std::vector<int>(amount+1,invalid));
+      for (int i=0; i<= coins.size(); i++) {
+        dp[i][0] = 0;
+      }
+      for(int i=1; i<= coins.size(); i++) {
+        for (int j=0; j<= amount; j++) {
+          int c1 = dp[i-1][j];
+          int c2 = j-coins[i-1]>=0&&dp[i][j-coins[i-1]]< invalid ? dp[i][j-coins[i-1]]+1 : invalid;
+          dp[i][j] = min(c1,c2);
+        }
+      }
+      if(dp.back().back() == invalid)
+        return -1;
+      else
+        return dp.back().back();
+    }
+  };
+
+  class SolutionSpace {
+   public:
+    int coinChange(vector<int>& coins, int amount) {
+      const int invalid = std::numeric_limits<int>::max();
+      std::vector<int> dp(amount+1, invalid);
+      dp.front() = 0;
+      for(int i=1; i<= coins.size(); i++) {
+        for(int j=0; j<= amount; j++) { // 无限背包问题正向寻找
+          int c1 = j-coins[i-1] >=0&&dp[j-coins[i-1]]<invalid ? dp[j-coins[i-1]]+1 : invalid;
+          dp[j] = std::min(dp[j], c1);
+        }
+      }
+      if(dp.back() == invalid)
+        return -1;
+      else
+        return dp.back();
+    }
+  };
+  Solution slo;
+  std::vector<int> nums{1,2,5};
+  EXPECT_EQ(slo.coinChange(nums,11), 3);
+}
+
 }//namespace of bag problem
 
 }// namespace of dynamic program
