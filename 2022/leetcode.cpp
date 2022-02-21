@@ -1417,6 +1417,20 @@ TEST(mid, T413) {
     int numberOfArithmeticSlices(vector<int> &nums) {
       if (nums.size() < 3)
         return 0;
+      std::vector<int> dp(nums.size());
+      for (int i = 2; i < nums.size(); i++) {
+        int counter = 0;
+        int delta = nums[i] - nums[i - 1];
+        for (int j = i; j > 0; j--) {
+          if (nums[j] - nums[j - 1] == delta) {
+            counter++;
+          } else {
+            break;
+          }
+        }
+        dp[i] = counter - 1;
+      }
+      return std::accumulate(dp.begin(), dp.end(), 0);
     }
   };
 }
@@ -1452,106 +1466,238 @@ TEST(mid, T542) {
   class Solution {
    public:
     vector<vector<int>> updateMatrix(const vector<vector<int>> &mat) {
-      std::vector<std::vector<int>> right_down(mat.size(), std::vector<int>(mat.front().size()));
-      std::vector<std::vector<int>> left_up(mat.size(), std::vector<int>(mat.front().size()));
-      const int max_dist = std::numeric_limits<int>::max();
-
-      int dist;
-      int max_row_idx = mat.size() - 1;
-      int max_col_dix = mat.front().size() - 1;
-
-      // init right
-      dist = max_dist;
-      for (int col = 0; col <= max_col_dix; col++) {
-        int row = 0;
-        if (mat[row][col] == 0) {
-          dist = 0;
-        } else {
-          dist = dist == max_dist ? max_dist : dist + 1;
-        }
-        right_down[row][col] = dist;
-      }
-      // init down
-      dist = max_dist;
-      for (int row = 0; row <= max_row_idx; row++) {
-        int col = 0;
-        if (mat[row][col] == 0) {
-          dist = 0;
-        } else {
-          dist = dist == max_dist ? max_dist : dist + 1;
-        }
-        right_down[row][col] = dist;
-      }
-
-      // init left
-      dist = max_dist;
-      for (int col = max_col_dix; col >= 0; col--) {
-        int row = max_row_idx;
-        if (mat[row][col] == 0) {
-          dist = 0;
-        } else {
-          dist = dist == max_dist ? max_dist : dist + 1;
-        }
-        left_up[row][col] = dist;
-      }
-      // init up
-      dist = max_dist;
-      for (int row = max_row_idx; row >= 0; row--) {
-        int col = max_col_dix;
-        if (mat[row][col] == 0) {
-          dist = 0;
-        } else {
-          dist = dist == max_dist ? max_dist : dist + 1;
-        }
-        left_up[row][col] = dist;
-      }
-
-      // set right_down
-      for (int row = 1; row <= max_row_idx; row++) {
-        for (int col = 1; col <= max_col_dix; col++) {
-          if (mat[row][col] == 0) {
-            right_down[row][col] = 0;
-          } else {
-            right_down[row][col] = std::min(right_down[row][col - 1], right_down[row - 1][col]);
-            right_down[row][col] = right_down[row][col] == max_dist ? max_dist : (right_down[row][col] + 1);
+      const int invalid = std::numeric_limits<int>::max();
+      const std::vector<std::pair<int, int>> dirs = {{-1, 0}, {1, 0}, {0, 1}, {0, -1}};
+      std::vector<std::vector<int>> res(mat.size(), std::vector<int>(mat.front().size(), invalid));
+      // 找到所有的0 设置为0, 推入队列
+      std::queue<std::pair<int, int>> bfs_queue;
+      for (int r = 0; r < mat.size(); r++) {
+        for (int j = 0; j < mat.size(); j++) {
+          if (mat[r][j] == 0) {
+            res[r][j] = 0;
+            bfs_queue.emplace(r, j);
           }
         }
       }
-
-      // set left_up
-      for (int row = max_row_idx - 1; row >= 0; row--) {
-        for (int col = max_col_dix - 1; col >= 0; col--) {
-          if (mat[row][col] == 0) {
-            left_up[row][col] = 0;
-          } else {
-            left_up[row][col] = std::min(left_up[row + 1][col], left_up[row][col + 1]);
-            left_up[row][col] = left_up[row][col] == max_dist ? max_dist : (left_up[row][col] + 1);
+      auto is_invalid = [&](const std::pair<int, int> idx) {
+        if (idx.first < 0 || idx.first >= mat.size() || idx.second < 0 || idx.second >= mat.front().size()) {
+          return false;
+        }
+        return res[idx.first][idx.second] == invalid;
+      };
+      while (!bfs_queue.empty()) {
+        int n = bfs_queue.size();
+        while (n > 0) {
+          const auto &idx = bfs_queue.front();
+          int dis = res[idx.first][idx.second];
+          for (auto &dir : dirs) {
+            std::pair<int, int> new_idx = {idx.first - dir.first, idx.second - dir.second};
+            if (is_invalid(new_idx)) {
+              bfs_queue.push(new_idx);
+              res[new_idx.first][new_idx.second] = dis + 1;
+            }
           }
+          n--;
+          bfs_queue.pop();
         }
       }
-
-      // set ans to right_down
-      for (int row = 0; row <= max_row_idx; row++) {
-        for (int col = 0; col <= max_col_dix; col++) {
-          right_down[row][col] = std::min(right_down[row][col], left_up[row][col]);
-        }
-      }
-
-      return right_down;
+      return res;
     }
   };
 
   Solution slo;
-  slo.updateMatrix({{0, 0, 1, 0, 1, 1, 1, 0, 1, 1},
-                    {1, 1, 1, 1, 0, 1, 1, 1, 1, 1},
-                    {1, 1, 1, 1, 1, 0, 0, 0, 1, 1},
-                    {1, 0, 1, 0, 1, 1, 1, 0, 1, 1},
-                    {0, 0, 1, 1, 1, 0, 1, 1, 1, 1},
-                    {1, 0, 1, 1, 1, 1, 1, 1, 1, 1},
-                    {1, 1, 1, 1, 0, 1, 0, 1, 0, 1},
-                    {0, 1, 0, 0, 0, 1, 0, 0, 1, 1},
-                    {1, 1, 1, 0, 1, 1, 0, 1, 0, 1},
-                    {1, 0, 1, 1, 1, 0, 1, 1, 1, 0}});
+  slo.updateMatrix({{0}, {0}, {0}, {0}, {0}});
+}
+
+TEST(mid, T221) {
+  class Solution {
+   public:
+    int maximalSquare(vector<vector<char>> &matrix) {
+      std::vector<std::vector<int>> dp(matrix.size(), std::vector<int>(matrix.front().size()));
+      auto dp_value = [&](int r, int c) {
+        if (r < 0 || c < 0) {
+          return 0;
+        }
+        return dp[r][c];
+      };
+      int max_l = 0;
+      for (int i = 0; i < matrix.size(); i++) {
+        for (int j = 0; j < matrix.front().size(); j++) {
+          if (matrix[i][j] == '1') {
+            dp[i][j] = std::min({dp_value(i - 1, j - 1), dp_value(i, j - 1), dp_value(i - 1, j)}) + 1;
+            max_l = std::max(dp[i][j], max_l);
+          }
+        }
+      }
+      return max_l * max_l;
+    }
+  };
+
+}
+
+TEST(mid, T279) {
+  class Solution {
+   public:
+    int numSquares(int n) {
+      std::vector<int> dp(n + 1);
+      dp[0] = 0;
+      dp[1] = 1;
+      for (int i = 2; i <= n; i++) {
+        int counter = std::numeric_limits<int>::max() - 1;
+        for (int j = 1; i - j * j >= 0; j++) {
+          counter = std::min(counter, dp[i - j * j] + 1);
+        }
+        dp[i] = counter;
+      }
+      return dp.back();
+    }
+  };
+  Solution slo;
+  slo.numSquares(12);
+}
+
+TEST(mid, T91) {
+  // 重做 边界条件
+  class Solution {
+   public:
+    int numDecodings(string s) {
+      if (s.front() == '0')
+        return 0;
+      if (s.size() == 1)
+        return 1;
+      std::vector<int> dp(s.size());
+      dp[0] = 1;
+      if (s[1] == '0') {
+        dp[1] = stoi(s.substr(0, 2)) <= 26;
+      } else {
+        dp[1] = stoi(s.substr(0, 2)) <= 26 ? 2 : 1;
+      }
+      for (int i = 2; i < s.size(); i++) {
+        int dp_2 = i - 2 >= 0 ? dp[i - 2] : 0;
+        if (s[i - 1] != '0') {
+          dp[i] = dp_2;
+          int two_num = std::stoi(s.substr(i - 1, 2));
+          if (s[i] == '0') {
+            if (two_num > 26)
+              dp[i] = 0;
+          } else {
+            if (two_num <= 26)
+              dp[i]++;
+          }
+        } else {
+          if (s[i] == '0')
+            return 0;
+          else
+            dp[i] = dp[i - 1];
+        }
+      }
+      return dp.back();
+    }
+  };
+  Solution slo;
+  slo.numDecodings("226");
+}
+
+TEST(mid, T139) {
+  class SolutionDfs {
+   public:
+    bool dfs(const std::string &s, const std::map<int, std::set<std::string *>> &len_word_map,
+             int s_idx,
+             std::vector<int> &memo) { // 减枝，避免重复计算，记录已经计算的结果
+      if (s_idx >= s.size())
+        return true;
+      if (memo[s_idx] != -1)
+        return memo[s_idx];
+
+      for (auto p = len_word_map.rbegin(); p != len_word_map.rend(); p++) {
+        int word_len = p->first;
+        if (s_idx + word_len > s.size()) {
+          continue;
+        }
+        const auto &word_to_compare = s.substr(s_idx, word_len);
+
+        for (auto word : p->second) {
+          if (*word != word_to_compare)
+            continue;
+          if (dfs(s, len_word_map, s_idx + word_len, memo)) {
+            memo[s_idx + word_len] = true;
+            return true;
+          }
+        }
+      }
+      memo[s_idx] = false;
+      return false;
+    }
+
+    bool wordBreak(string s, vector<string> &wordDict) {
+      std::map<int, std::set<std::string *>> len_word_map;
+      std::vector<int> memo(s.size(), -1);
+      for (auto &w : wordDict) {
+        len_word_map[w.size()].insert(&w);
+      }
+      return dfs(s, len_word_map, 0, memo);
+    }
+  };
+
+  class Solution {
+   public:
+    bool wordBreak(string s, vector<string> &wordDict) {
+      std::map<int, std::set<std::string *>> len_word_map;
+      for (auto &w : wordDict) {
+        len_word_map[w.size()].insert(&w);
+      }
+      std::vector<bool> dp(s.size() + 1); // dp[i] ,s的前i(不含)个字符是否能够在dir中构成
+      dp[0] = true;
+      for (int i = 1; i <= s.size(); i++) {
+        for (const auto &pair : len_word_map) {
+          int word_len = pair.first;
+          int idx = i - word_len;
+          if (idx < 0)
+            break;
+          if (!dp[idx]) { // 当前子长度的字符在字典中没有找到也就没必要继续找了,换一个长度
+            continue;
+          }
+          const auto &s_sub = s.substr(idx, word_len);
+
+          for (const auto &word : pair.second) {
+            if (*word == s_sub) {
+              dp[i] = true;
+            }
+          }
+
+          if (dp[i])
+            break;// 已经找到就没必要继续找了，往下求下一个i的dp
+        }
+      }
+      return dp.back();
+    }
+  };
+
+  Solution slo;
+  vector<string> wordDict{"leet", "code"};
+  slo.wordBreak("leetcode", wordDict);
+}
+
+TEST(mid, T300) {
+  class Solution {
+   public:
+    int lengthOfLIS(vector<int> &nums) {
+      std::vector<int> dp(nums.size());
+      dp[0] = 1;
+      int max_l = 0;
+      for (int i = 1; i < dp.size(); i++) {
+        int l = 1;
+        for (int j = i - 1; j >= 0; j--) {
+          if (nums[i] >= nums[j]) {
+            l = std::max(l, dp[j] + 1);
+          }
+          dp[i] = l;
+          max_l = std::max(l, max_l);
+        }
+      }
+      return max_l;
+    }
+  };
 }
 
 namespace bag_problem {
@@ -1561,19 +1707,19 @@ TEST(mid, T416) {//重做
 
     bool canPartition(vector<int> &nums) {
       int sum = std::accumulate(nums.begin(), nums.end(), 0);
-      if (sum%2 != 0)
+      if (sum % 2 != 0)
         return false;
-      sum = sum/2;
-      std::vector<std::vector<bool>> dp(nums.size()+1, std::vector<bool>(sum+1));
-      for(int i=0; i<= nums.size(); i++) {
+      sum = sum / 2;
+      std::vector<std::vector<bool>> dp(nums.size() + 1, std::vector<bool>(sum + 1));
+      for (int i = 0; i <= nums.size(); i++) {
         dp[i][0] = true; // 和为0任何i都能达到
       }
-      for(int i=1; i<= nums.size(); i++) {
-        for (int j=0; j<=sum; j++) { // 和为j至少也需要i个数(因为nums[i]>=1)
-          if(j-nums[i-1]>=0) {
-            dp[i][j] = dp[i-1][j] || dp[i-1][j-nums[i-1]];
-          }else {
-            dp[i][j] = dp[i-1][j];
+      for (int i = 1; i <= nums.size(); i++) {
+        for (int j = 0; j <= sum; j++) { // 和为j至少也需要i个数(因为nums[i]>=1)
+          if (j - nums[i - 1] >= 0) {
+            dp[i][j] = dp[i - 1][j] || dp[i - 1][j - nums[i - 1]];
+          } else {
+            dp[i][j] = dp[i - 1][j];
           }
         }
       }
@@ -1582,24 +1728,24 @@ TEST(mid, T416) {//重做
   };
   class SolutionSpace {
    public:
-    bool canPartition(vector<int>& nums) {
+    bool canPartition(vector<int> &nums) {
       int sum = std::accumulate(nums.begin(), nums.end(), 0);
-      if (sum%2 != 0 )
+      if (sum % 2 != 0)
         return false;
       sum /= 2;
-      std::vector<bool> dp(sum+1);
+      std::vector<bool> dp(sum + 1);
       dp[0] = true; // 和为0一定能保证
-      for(int i=1; i<= nums.size(); i++) {
-        for(int j=sum;j>=0; j--) { // 0-1背包问题反向递归
-          if(j-nums[i-1] >=0){
-            dp[j] = dp[j] || dp[j-nums[i-1]];
+      for (int i = 1; i <= nums.size(); i++) {
+        for (int j = sum; j >= 0; j--) { // 0-1背包问题反向递归
+          if (j - nums[i - 1] >= 0) {
+            dp[j] = dp[j] || dp[j - nums[i - 1]];
           }
         }
       }
       return dp.back();
     }
   };
-  std::vector<int> nums{1,1,2,2};
+  std::vector<int> nums{1, 1, 2, 2};
   SolutionSpace slo;
   EXPECT_TRUE(slo.canPartition(nums));
 }
@@ -1607,27 +1753,28 @@ TEST(mid, T416) {//重做
 TEST(mid, T474) {
   class Solution {
    public:
-    std::pair<int,int> Str01(const std::string& str) {
+    std::pair<int, int> Str01(const std::string &str) {
       int zeros = 0, ones = 0;
-      for(const auto c : str) {
-        if(c=='0')
+      for (const auto c : str) {
+        if (c == '0')
           zeros++;
-        else{
+        else {
           ones++;
         }
       }
-      return {zeros,ones};
+      return {zeros, ones};
     }
-    int findMaxForm(vector<string>& strs, int m, int n) {
-      std::vector<std::vector<std::vector<int>>> dp(strs.size()+1, std::vector<std::vector<int>>( m+1, std::vector<int>(n+1)));
-      for(int i=1; i<=strs.size(); i++) {
-        for(int j=0; j<=m;j++){
-          for(int k=0;k<=n;k++) {
-            auto zero_one = Str01(strs[i-1]);
-            if(j - zero_one.first >=0 && k - zero_one.second >= 0) {
-              dp[i][j][k] = std::max(dp[i-1][j-zero_one.first][k-zero_one.second]+1, dp[i-1][j][k]);
+    int findMaxForm(vector<string> &strs, int m, int n) {
+      std::vector<std::vector<std::vector<int>>>
+          dp(strs.size() + 1, std::vector<std::vector<int>>(m + 1, std::vector<int>(n + 1)));
+      for (int i = 1; i <= strs.size(); i++) {
+        for (int j = 0; j <= m; j++) {
+          for (int k = 0; k <= n; k++) {
+            auto zero_one = Str01(strs[i - 1]);
+            if (j - zero_one.first >= 0 && k - zero_one.second >= 0) {
+              dp[i][j][k] = std::max(dp[i - 1][j - zero_one.first][k - zero_one.second] + 1, dp[i - 1][j][k]);
             } else {
-              dp[i][j][k] = dp[i-1][j][k];
+              dp[i][j][k] = dp[i - 1][j][k];
             }
           }
         }
@@ -1638,26 +1785,26 @@ TEST(mid, T474) {
 
   class SolutionSpace {
    public:
-    std::pair<int,int> Str01(const std::string& str) {
+    std::pair<int, int> Str01(const std::string &str) {
       int zeros = 0, ones = 0;
-      for(const auto c : str) {
-        if(c=='0')
+      for (const auto c : str) {
+        if (c == '0')
           zeros++;
-        else{
+        else {
           ones++;
         }
       }
-      return {zeros,ones};
+      return {zeros, ones};
     }
 
-    int findMaxForm(vector<string>& strs, int m, int n) {
-      std::vector<std::vector<int>> dp(m+1, std::vector<int>(n+1));
-      for(int i=1; i<= strs.size(); i++) {
-        for(int j=m; j>=0; j--) {// 0-1问题，反向求解
-          for(int k=n; k>=0; k--) {
-            auto zero_one = Str01(strs[i-1]);
-            if(j-zero_one.first >=0 && k-zero_one.second>=0)
-            dp[j][k] = std::max(dp[j][k], dp[j-zero_one.first][k-zero_one.second]+1);
+    int findMaxForm(vector<string> &strs, int m, int n) {
+      std::vector<std::vector<int>> dp(m + 1, std::vector<int>(n + 1));
+      for (int i = 1; i <= strs.size(); i++) {
+        for (int j = m; j >= 0; j--) {// 0-1问题，反向求解
+          for (int k = n; k >= 0; k--) {
+            auto zero_one = Str01(strs[i - 1]);
+            if (j - zero_one.first >= 0 && k - zero_one.second >= 0)
+              dp[j][k] = std::max(dp[j][k], dp[j - zero_one.first][k - zero_one.second] + 1);
           }
         }
       }
@@ -1669,20 +1816,20 @@ TEST(mid, T474) {
 TEST(mid, T322) {
   class Solution {
    public:
-    int coinChange(vector<int>& coins, int amount) {
+    int coinChange(vector<int> &coins, int amount) {
       const int invalid = std::numeric_limits<int>::max();
-      std::vector<std::vector<int>> dp(coins.size()+1, std::vector<int>(amount+1,invalid));
-      for (int i=0; i<= coins.size(); i++) {
+      std::vector<std::vector<int>> dp(coins.size() + 1, std::vector<int>(amount + 1, invalid));
+      for (int i = 0; i <= coins.size(); i++) {
         dp[i][0] = 0;
       }
-      for(int i=1; i<= coins.size(); i++) {
-        for (int j=0; j<= amount; j++) {
-          int c1 = dp[i-1][j];
-          int c2 = j-coins[i-1]>=0&&dp[i][j-coins[i-1]]< invalid ? dp[i][j-coins[i-1]]+1 : invalid;
-          dp[i][j] = min(c1,c2);
+      for (int i = 1; i <= coins.size(); i++) {
+        for (int j = 0; j <= amount; j++) {
+          int c1 = dp[i - 1][j];
+          int c2 = j - coins[i - 1] >= 0 && dp[i][j - coins[i - 1]] < invalid ? dp[i][j - coins[i - 1]] + 1 : invalid;
+          dp[i][j] = min(c1, c2);
         }
       }
-      if(dp.back().back() == invalid)
+      if (dp.back().back() == invalid)
         return -1;
       else
         return dp.back().back();
@@ -1691,28 +1838,314 @@ TEST(mid, T322) {
 
   class SolutionSpace {
    public:
-    int coinChange(vector<int>& coins, int amount) {
+    int coinChange(vector<int> &coins, int amount) {
       const int invalid = std::numeric_limits<int>::max();
-      std::vector<int> dp(amount+1, invalid);
+      std::vector<int> dp(amount + 1, invalid);
       dp.front() = 0;
-      for(int i=1; i<= coins.size(); i++) {
-        for(int j=0; j<= amount; j++) { // 无限背包问题正向寻找
-          int c1 = j-coins[i-1] >=0&&dp[j-coins[i-1]]<invalid ? dp[j-coins[i-1]]+1 : invalid;
+      for (int i = 1; i <= coins.size(); i++) {
+        for (int j = 0; j <= amount; j++) { // 无限背包问题正向寻找
+          int c1 = j - coins[i - 1] >= 0 && dp[j - coins[i - 1]] < invalid ? dp[j - coins[i - 1]] + 1 : invalid;
           dp[j] = std::min(dp[j], c1);
         }
       }
-      if(dp.back() == invalid)
+      if (dp.back() == invalid)
         return -1;
       else
         return dp.back();
     }
   };
   Solution slo;
-  std::vector<int> nums{1,2,5};
-  EXPECT_EQ(slo.coinChange(nums,11), 3);
+  std::vector<int> nums{1, 2, 5};
+  EXPECT_EQ(slo.coinChange(nums, 11), 3);
 }
 
 }//namespace of bag problem
+
+namespace string_problem {
+
+TEST(mid, T1143) {
+  // 重做
+  class Solution {
+   public:
+    int longestCommonSubsequence(string text1, string text2) {
+      std::vector<std::vector<int>> dp(text1.size() + 1, std::vector<int>(text2.size() + 1));
+      for (int i = 1; i <= text1.size(); i++) {
+        for (int j = 1; j <= text2.size(); j++) {
+          dp[i][j] = std::max(dp[i - 1][j - 1] + (text1[i - 1] == text2[j - 1]), dp[i - 1][j]);
+          dp[i][j] = std::max(dp[i][j], dp[i][j - 1]);
+        }
+      }
+      return dp.back().back();
+    }
+  };
+}
+
+TEST(hard, T72) {
+  // 重做
+  class Solution {
+   public:
+    int minDistance(string word1, string word2) {
+
+    }
+  };
+}
+
+TEST(mid, T650) {
+  class Solution {
+   public:
+    int minSteps(int n) {
+      if (n <= 1) {
+        return 0;
+      }
+      std::vector<pair<int, int>> dp(n + 1);// second 储存copy的缓存A的数量
+      dp[2] = {2, 1}; // copy and paste 缓存copy了a的数量为1
+      for (int i = 3; i <= n; i++) {
+        std::pair<int, int> temp;
+        if (i % 2 == 0 && i / 2 >= 2) {
+          temp = {dp[i / 2].first + 2, i / 2}; // copy all一半再paste
+        } else {
+          temp = {std::numeric_limits<int>::max() - 100, 0}; // random big value
+        }
+        for (int j = 2; j < i; j++) {
+          if ((i - j) % dp[j].second == 0) { // 直接paste缓存
+            int buffer_paste_count = (i - j) / dp[j].second;
+            if (temp.first > (dp[j].first + buffer_paste_count)) {
+              temp = {dp[j].first + buffer_paste_count, dp[j].second};
+            }
+          }
+        }
+        dp[i] = temp;
+      }
+      return dp.back().first;
+    }
+  };
+}
+
+TEST(hard, T10) {
+  class Solution {
+   public:
+    enum PROPERTY {
+      FIX,
+      RANDOM_CHAR,
+      REPEAT,
+      RANDOM_REPEAT_CHAR
+    };
+    bool isMatch(string s, string p) {
+      std::vector<std::pair<char, PROPERTY>> reg;
+      reg.reserve(p.size());
+      int idx = 0;
+      while (idx < p.size()) {
+        if (idx != p.size() - 1 && p[idx + 1] == '*') {
+          if (p[idx] == '.') {
+            reg.emplace_back(0, RANDOM_REPEAT_CHAR);
+          } else {
+            reg.emplace_back(p[idx], REPEAT);
+          }
+          idx += 2;
+        } else {
+          if (p[idx] == '.') {
+            reg.emplace_back(0, RANDOM_CHAR);
+          } else {
+            reg.emplace_back(p[idx], FIX);
+          }
+          idx++;
+        }
+      }
+
+      std::vector<std::vector<char>> dp(s.size() + 1, std::vector<char>(reg.size() + 1));
+
+      auto is_match = [](char c, const std::pair<char, PROPERTY> &property) -> char {
+        if (property.second == RANDOM_CHAR)
+          return 1;
+        else if (c == property.first) {
+          if (property.second == REPEAT) {
+            return c;
+          } else {
+            return 1;
+          }
+        } else if (property.second == RANDOM_REPEAT_CHAR)
+          return 3;
+        return 0;
+      };
+
+      auto is_repeat = [](const std::pair<char, PROPERTY> &property) -> char {
+        if ((property.second == RANDOM_REPEAT_CHAR || property.second == REPEAT))
+          return 2;
+        return 0;
+      };
+
+      dp[0][0] = true;
+      for (int j = 1; j <= reg.size(); j++) {
+        if (dp[0][j - 1] > 0 && is_repeat(reg[j - 1])) {
+          dp[0][j] = 2;
+        }
+      }
+      // dp[i][j] 0 不匹配
+      // dp[i][j] == 1 正常匹配
+      // dp[i][j]==2 通过删除匹配
+      // dp[i][j]==3 通过.* 匹配
+      // dp[i][j] >= 'a' 通过重复dp[i][j] 进行匹配
+
+      for (int i = 1; i <= s.size(); i++) {
+        for (int j = 1; j <= reg.size(); j++) {
+          auto s_i = s[i - 1];
+          const auto &reg_j = reg[j - 1];
+          if (dp[i - 1][j - 1] && is_match(s_i, reg_j)) {
+            dp[i][j] = is_match(s_i, reg_j);
+            continue;
+          } else if (dp[i][j - 1] && is_repeat(reg_j)) {
+            if (reg_j.second == REPEAT)
+              dp[i][j] = 2; // 通过删除reg_j匹配
+            else
+              dp[i][j] = 3; // 通过.*匹配
+            continue;
+          } else if (dp[i - 1][j] && is_repeat(reg_j)) {
+            char match_char = dp[i - 1][j];
+            if (match_char == s_i) {
+              dp[i][j] = s_i;
+              continue;
+            } else if (match_char == 3) {
+              dp[i][j] = 3;
+              continue;
+            }
+          }
+          dp[i][j] = false;
+        }
+      }
+      return dp.back().back();
+    }
+  };
+  Solution slo;
+  slo.isMatch(std::string("aaabaaaababcbccbaa"), std::string("c*c*.*c*a*..*c*"));
+}
+
+} // namespace of string problem
+
+namespace stock_exchange {
+
+TEST(easy, T121) {
+  // 重做!!
+  class Solution {
+   public:
+    int maxProfit(const vector<int> &prices) {
+      std::vector<int> dp(prices.size());
+      int res = 0;
+      dp[0] = prices[0];
+      for (int i = 1; i < dp.size(); i++) {
+        int buy = dp[i - 1];
+        int sell = prices[i] - dp[i - 1];
+        res = std::max(sell, res);
+        if (prices[i] < dp[i - 1]) {
+          dp[i] = prices[i];
+        } else {
+          dp[i] = dp[i - 1];
+        }
+      }
+      return res;
+    }
+  };
+  Solution slo;
+  slo.maxProfit({7, 1, 5, 3, 6, 4});
+}
+
+TEST(hard, T188) {
+  class Solution {
+   public:
+    int dfs(const std::vector<std::pair<int, int>> &price_ups,
+            int k,
+            int start_idx) {
+      if (k == 0)
+        return 0;
+
+      int max_profit = 0;
+      for (int i = start_idx; i < price_ups.size(); i++) {
+        int new_profit = price_ups[i].second - price_ups[start_idx].first;
+        max_profit = std::max(new_profit, max_profit);
+        for (int j = i + 1; j < price_ups.size(); j++) {
+          int temp_profit = 0;
+          if (memo[j].find(k - 1) == memo[j].end()) {
+            temp_profit = dfs(price_ups, k - 1, j);
+            memo[j][k - 1] = temp_profit;
+          } else
+            temp_profit = memo[j][k - 1];
+          max_profit = std::max(new_profit + temp_profit, max_profit);
+        }
+      }
+      return max_profit;
+    }
+
+    int dfs2(const std::vector<std::pair<int, int>> &price_ups,
+            int k,
+            int start_idx) {
+      if (k == 0)
+        return 0;
+
+      int max_profit = 0;
+      for (int i = start_idx; i < price_ups.size(); i++) {
+        int new_profit = price_ups[i].second - price_ups[start_idx].first;
+        max_profit = std::max(new_profit, max_profit);
+        for (int j = i + 1; j < price_ups.size(); j++) {
+          int temp_profit = 0;
+          temp_profit = dfs2(price_ups, k - 1, j);
+          max_profit = std::max(new_profit + temp_profit, max_profit);
+        }
+      }
+      return max_profit;
+    }
+
+    int maxProfit(int k, const vector<int> &prices) {
+      if (prices.size() < 2 || k == 0)
+        return 0;
+      std::vector<int> dp(prices.size()); // 以[i]为最大值之前的最小值
+      std::vector<std::pair<int, int>> price_ups; // 价格上涨的区间
+      dp[0] = prices[0];
+      bool is_last_day_sell = true;
+      for (int i = 1; i < prices.size(); i++) {
+        if (prices[i] >= prices[i - 1]) {
+          dp[i] = dp[i - 1];
+          if (i == prices.size() - 1) // 最后一天价格还在涨
+            is_last_day_sell = false;
+        } else { // 价格下跌了
+          if (prices[i - 1] > dp[i - 1])
+            price_ups.emplace_back(dp[i - 1], prices[i - 1]); // 找到一个上涨区间
+          dp[i] = prices[i];
+        }
+      }
+      if (!is_last_day_sell) {
+        price_ups.emplace_back(dp.back(), prices.back());
+      }
+      memo.clear();
+      memo.resize(price_ups.size());
+
+      auto start = std::chrono::high_resolution_clock::now();
+      int res_max = 0;
+      for (int i = 0; i < price_ups.size(); i++) {
+        int temp = dfs(price_ups, k, i);
+        res_max = std::max(res_max, temp);
+      }
+      auto end = std::chrono::high_resolution_clock::now();
+      std::cout << "Time Momo : " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() / 1e6 << "ms" << std::endl;
+
+      start = std::chrono::high_resolution_clock::now();
+      res_max = 0;
+      for (int i = 0; i < price_ups.size(); i++) {
+        int temp = dfs2(price_ups, k, i);
+        res_max = std::max(res_max, temp);
+      }
+      end = std::chrono::high_resolution_clock::now();
+      std::cout << "Time Without Momo : " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() / 1e6 << "ms" << std::endl;
+
+      return res_max;
+    }
+    std::vector<std::map<int, int>> memo; // [i][j] i-表示从第i个开始 j 表示当前交易次数
+  };
+  Solution slo;
+  slo.maxProfit(9,
+                {70, 4, 83, 56, 94, 72, 78, 43, 2, 86, 65, 100, 94, 56, 41, 66, 3, 33, 10, 3, 45, 94, 15, 12, 78, 60,
+                 58, 0, 58, 15, 21, 7, 11, 41, 12, 96, 83, 77, 47, 62, 27, 19, 40, 63, 30, 4, 77, 52, 17, 57, 21, 66});
+}
+
+} // namespace of stock exchange
 
 }// namespace of dynamic program
 

@@ -11,3 +11,5 @@ target_link_libraries(LeetCodeTest
         ${GTEST_BOTH_LIBRARIES}
         pthread
         )
+set(CXX_STANDARD C++11)
+add_compile_options(-o0 -g)
