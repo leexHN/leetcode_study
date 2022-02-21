@@ -2075,8 +2075,8 @@ TEST(hard, T188) {
     }
 
     int dfs2(const std::vector<std::pair<int, int>> &price_ups,
-            int k,
-            int start_idx) {
+             int k,
+             int start_idx) {
       if (k == 0)
         return 0;
 
@@ -2124,7 +2124,8 @@ TEST(hard, T188) {
         res_max = std::max(res_max, temp);
       }
       auto end = std::chrono::high_resolution_clock::now();
-      std::cout << "Time Momo : " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() / 1e6 << "ms" << std::endl;
+      std::cout << "Time Momo : " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() / 1e6
+                << "ms" << std::endl;
 
       start = std::chrono::high_resolution_clock::now();
       res_max = 0;
@@ -2133,7 +2134,8 @@ TEST(hard, T188) {
         res_max = std::max(res_max, temp);
       }
       end = std::chrono::high_resolution_clock::now();
-      std::cout << "Time Without Momo : " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() / 1e6 << "ms" << std::endl;
+      std::cout << "Time Without Momo : "
+                << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() / 1e6 << "ms" << std::endl;
 
       return res_max;
     }
@@ -2148,6 +2150,87 @@ TEST(hard, T188) {
 } // namespace of stock exchange
 
 }// namespace of dynamic program
+
+
+namespace divide_conquer {
+
+TEST(mid, T241) {
+  class Solution {
+    enum OPERATOR {
+      ADD,
+      SUB,
+      PRO,
+    };
+   public:
+    // 左闭右开
+
+    void Utility(int l, int r, const std::vector<int> &nums, const std::vector<OPERATOR> &op) {
+      if (l == r) {
+        memo[{l, r}] = {nums[l]};
+        return;
+      }
+
+      std::vector<int> res;
+      for (int i = l; i < r; i++) {
+        auto cur_op = op[i];
+        if (memo.find({l, i}) == memo.end()) {
+          Utility(l, i, nums, op);
+        }
+        if (memo.find({i + 1, r}) == memo.end()) {
+          Utility(i + 1, r, nums, op);
+        }
+        const auto &l_vec = memo[{l, i}];
+        const auto &r_vec = memo[{i + 1, r}];
+        for (auto l_num : l_vec) {
+          for (auto r_num : r_vec) {
+            switch (cur_op) {
+              case ADD:res.push_back(l_num + r_num);
+                break;
+              case SUB:res.push_back(l_num - r_num);
+                break;
+              case PRO:res.push_back(l_num * r_num);
+                break;
+            }
+          }
+        }
+      }
+      memo[{l, r}] = res;
+    }
+
+    vector<int> diffWaysToCompute(string expression) {
+      std::vector<int> nums;
+      std::vector<OPERATOR> op;
+      std::string temp;
+      for (int i = 0; i < expression.size(); i++) {
+        char c = expression[i];
+        if (c != '+' && c != '-' && c != '*') {
+          temp.push_back(c);
+        } else {
+          nums.push_back(std::stoi(temp));
+          temp.clear();
+          if (c == '+') {
+            op.push_back(ADD);
+          } else if (c == '-') {
+            op.push_back(SUB);
+          } else {
+            op.push_back(PRO);
+          }
+        }
+      }
+      nums.push_back(stoi(temp));
+      temp.clear();
+
+      Utility(0, nums.size() - 1, nums, op);
+
+      return memo[{0, nums.size() - 1}];
+    }
+    std::map<std::pair<int, int>, std::vector<int>> memo;
+  };
+  Solution slo;
+  slo.diffWaysToCompute("2*3-4*5");
+}
+
+} // namespace divide conquer
 
 
 
