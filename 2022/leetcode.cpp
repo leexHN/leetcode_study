@@ -2155,6 +2155,7 @@ TEST(hard, T188) {
 namespace divide_conquer {
 
 TEST(mid, T241) {
+  // 重做
   class Solution {
     enum OPERATOR {
       ADD,
@@ -2232,6 +2233,129 @@ TEST(mid, T241) {
 
 } // namespace divide conquer
 
+
+namespace data_struct {
+TEST(easy, T448) {
+  class Solution {
+   public:
+    vector<int> findDisappearedNumbers(vector<int> &nums) {
+      int n = nums.size();
+      std::sort(nums.begin(), nums.end());
+      std::vector<int> res;
+      int cur_num = 0;
+      for (int i = 0; i < nums.size(); i++) {
+        if (nums[i] != cur_num) {
+          cur_num++;
+          while (cur_num < nums[i]) {
+            res.push_back(cur_num);
+            cur_num++;
+          }
+        }
+      }
+      if (cur_num < n) {
+        cur_num++;
+        while (true) {
+          res.push_back(cur_num);
+          cur_num++;
+          if (cur_num > n)
+            break;
+        }
+      }
+      return res;
+    }
+  };
+}
+
+TEST(mid, T48) {
+  class Solution {
+   public:
+    void rotate(vector<vector<int>> &matrix) {
+      // 重做
+    }
+  };
+}
+
+TEST(mid, T240) {
+  class Solution {
+   public:
+    int RowEnd(const vector<vector<int>> &mat, int r_idx) {
+      return mat[r_idx].back();
+    }
+    int ColEnd(const vector<vector<int>> &mat, int col_idx) {
+      return mat.back()[col_idx];
+    }
+
+    bool SearchOneRow(const vector<vector<int>> &mat, int row) const {
+      int l = row, r = col_size - 1;
+      auto get = [&](int i) {
+        return mat[row][i];
+      };
+      while (r >= l) {
+        int mid = (l + r) / 2;
+        if (get(mid) > target_) {
+          r = mid - 1;
+        } else if (get(mid) < target_) {
+          l = mid + 1;
+        } else {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    bool SearchOneCol(const vector<vector<int>> &mat, int col) const {
+      int l = col, r = row_size - 1;
+      auto get = [&](int i) {
+        return mat[i][col];
+      };
+      while (r >= l) {
+        int mid = (l + r) / 2;
+        if (get(mid) > target_) {
+          r = mid - 1;
+        } else if (get(mid) < target_) {
+          l = mid + 1;
+        } else {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    bool searchMatrix(const vector<vector<int>> &matrix, int target) {
+      int search_idx = 0;
+      row_size = matrix.size();
+      col_size = matrix.front().size();
+      target_ = target;
+      while (search_idx < matrix.size() && search_idx < matrix.front().size()) {
+        int row_end = RowEnd(matrix, search_idx);
+        if (row_end >= target) { // 这一行可能有值
+          if (SearchOneRow(matrix, search_idx))
+            return true;
+        }
+
+        int col_end = ColEnd(matrix, search_idx);
+        if (col_end >= target) { // 这一列可能有值
+          if (SearchOneCol(matrix, search_idx))
+            return true;
+        }
+
+        search_idx++;
+      }
+      return false;
+    }
+    int row_size;
+    int col_size;
+    int target_;
+  };
+  Solution slo;
+  slo.searchMatrix({{1, 4, 7, 11, 15},
+                    {2, 5, 8, 12, 19},
+                    {3, 6, 9, 16, 22},
+                    {10, 13, 14, 17, 24},
+                    {18, 21, 23, 26, 30}}, 5);
+}
+
+} // namespace of data struct
 
 
 
