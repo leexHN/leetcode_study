@@ -19,6 +19,14 @@
 
 using namespace std;
 
+struct ListNode {
+  int val;
+  ListNode *next;
+  ListNode() : val(0), next(nullptr) {}
+  ListNode(int x) : val(x), next(nullptr) {}
+  ListNode(int x, ListNode *next) : val(x), next(next) {}
+};
+
 namespace greedy_algorithm {
 
 TEST(easy, T455) {
@@ -2355,9 +2363,151 @@ TEST(mid, T240) {
                     {18, 21, 23, 26, 30}}, 5);
 }
 
+TEST(hard, T23) {
+  class Solution {
+   public:
+    // 左闭右开
+    void Merge(vector<ListNode *> &lists, int l, int r) {
+      if (r - l <= 1)
+        return;
+      int mid = (l + r) / 2;
+      Merge(lists, l, mid); // exclude mid
+      Merge(lists, mid, r); // include mid
+
+
+      ListNode* list1 = nullptr;
+      ListNode *list2 = nullptr;
+      for (int i = l; i < r; i++) {
+        if (lists[i] != nullptr) {
+          if(list1 == nullptr) {
+            list1 = lists[i];
+            lists[i] = nullptr;
+          }else if(list2 == nullptr){
+            list2 = lists[i];
+            lists[i] = nullptr;
+            break;
+          }
+        }
+      }
+      if (list2 == nullptr) {
+        lists[l] = list1;
+        return;
+      }
+      // 每次都放在最左边->list1
+      ListNode *c1 = list1, *c2 = list2;
+      ListNode *top = c1->val > c2->val ? c2 : c1;
+      ListNode *cur_node = nullptr, *temp;
+
+      if (c1->val > c2->val) {
+        cur_node = c2;
+        c2 = c2->next;
+      }else {
+        cur_node = c1;
+        c1 = c1->next;
+      }
+
+      while (c1 != nullptr && c2 != nullptr) {
+        if (c1->val > c2->val) {
+          temp = c2->next;
+          cur_node->next = c2;
+          cur_node = cur_node->next;
+          c2 = temp;
+        }else{
+          temp = c1->next;
+          cur_node->next = c1;
+          cur_node = cur_node->next;
+          c1 = temp;
+        }
+      }
+      if (c1 != nullptr) {
+        cur_node->next = c1;
+      } else {
+        cur_node->next = c2;
+      }
+
+      lists[l] = top;
+    }
+    ListNode *mergeKLists(vector<ListNode *> &lists) {
+      Merge(lists, 0, lists.size());
+      for(auto list : lists) {
+        if(list != nullptr)
+          return list;
+      }
+      return nullptr;
+    }
+  };
+  ListNode* list1 = new ListNode(1);
+  list1->next = new ListNode(4);
+  list1->next->next = new ListNode(5);
+  ListNode* list2 = new ListNode(1);
+  list2->next = new ListNode(3);
+  list2->next->next = new ListNode(4);
+  ListNode* list3 = new ListNode(2);
+  list3->next = new ListNode(6);
+  std::vector<ListNode*> lists{list1, list2, list3};
+  Solution slo;
+  slo.mergeKLists(lists);
+  lists = {{},new ListNode(1)};
+  slo.mergeKLists(lists);
+}
+
 } // namespace of data struct
 
+namespace daily_test {
+TEST(mid, T1706) {
+  class Solution {
+   public:
+    vector<int> findBall(const vector<vector<int>> &grid) {
+      int row_num = grid.size();
+      int col_num = grid.front().size();
+      if (col_num == 1)
+        return {-1};
+      auto is_move_able = [&](int row, int col) {
+        auto rows = grid[row];
+        // left bound
+        if (col == 0) {
+          if (rows[col] == -1)
+            return false;
+          else
+            return true;
+        }
+        if (col == col_num - 1) {
+          if (rows[col] == 1)
+            return false;
+          else
+            return true;
+        }
+        int cur_dir = rows[col];
+        int next_dir;
+        if (cur_dir == 1) {
+          next_dir = rows[col + 1];
+        } else {
+          next_dir = rows[col - 1];
+        }
+        return cur_dir == next_dir;
+      };
 
+      std::vector<int> ans(col_num);
+      auto *pre_row = &ans;
+
+      for (int i = 0; i < col_num; i++) {
+        int col = i;
+        for (int row = 0; row < row_num; row++) {
+          if (is_move_able(row, col))
+            col += grid[row][col];
+          else {
+            col = -1;
+            break;
+          }
+        }
+        ans[i] = col;
+      }
+      return ans;
+    }
+  };
+}
+
+}
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
